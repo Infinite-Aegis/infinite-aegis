@@ -1,8 +1,8 @@
-﻿name: Test Packaging
+name: Test Packaging
 
 on:
   push:
-    branches: [ master, staging, stable ]
+    branches: [ main ]
     paths:
       - '**.cs'
       - '**.csproj'
@@ -16,7 +16,7 @@ on:
   merge_group:
   pull_request:
     types: [ opened, reopened, synchronize, ready_for_review ]
-    branches: [ master, staging, stable ]
+    branches: [ main ]
     paths:
       - '**.cs'
       - '**.csproj'
@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Master
+      - name: Checkout repository
         uses: actions/checkout@v4.2.2
 
       - name: Setup Submodule
