@@ -1,48 +1,84 @@
-## Summary
+# Краткое описание
 
-<!-- Briefly describe what this Pull Request changes. -->
+<!-- В нескольких предложениях расскажите, что добавляет или исправляет этот Pull Request. -->
 
-## Motivation
-
-<!-- Explain why this change is needed and what problem it solves. -->
-
-## Changes
-
-<!-- List the main changes made in this Pull Request. -->
-
--
--
--
-
-## Testing
-
-<!-- Describe how the changes were tested. -->
-
-- [ ] The project builds successfully
-- [ ] The affected functionality was tested locally
-- [ ] The server starts successfully
-- [ ] The client starts successfully
-- [ ] Additional automated tests were added or updated where applicable
-
-## Media
+## Зачем это нужно
 
 <!--
-Add screenshots or video for visible in-game changes.
-Remove this section when media is not applicable.
+Объясните причину изменения:
+- какую проблему оно решает;
+- кто предложил изменение;
+- с какой задачей или обсуждением оно связано.
 -->
 
-## Licensing and Attribution
+## Что изменено
 
-- [ ] I have the right to submit all code and materials included in this Pull Request
-- [ ] All third-party materials include the required author, source, and license information
-- [ ] No third-party material is incorrectly presented as proprietary Infinite Aegis content
-- [ ] ShareAlike materials retain their required license and attribution
+<!-- Перечислите основные изменения. -->
 
-## Checklist
+-
+-
+-
 
-- [ ] This Pull Request targets `main`
-- [ ] The branch contains only changes related to this task
-- [ ] I have reviewed my changes before submitting
-- [ ] I have not committed generated, temporary, or development-environment files
-- [ ] All required GitHub checks pass
-- [ ] All review conversations have been resolved
+## Как проверить
+
+<!--
+Опишите пошагово, как проверить изменение.
+Не пишите просто «работает».
+-->
+
+1.
+2.
+3.
+
+## Медиа
+
+<!--
+Добавьте скриншоты или видео, если изменение видно в игре.
+Удалите этот раздел, если медиа не требуется.
+-->
+
+## Изменения для игроков
+
+<!--
+Заполните этот блок для изменений, которые должны попасть в игровой changelog.
+Удалите блок целиком, если изменение не касается игроков.
+
+Доступные типы:
+- add — добавление;
+- remove — удаление;
+- tweak — изменение;
+- fix — исправление.
+-->
+
+<!--
+:cl:
+- add: Добавлено что-то новое.
+- tweak: Изменено существующее поведение.
+- fix: Исправлена ошибка.
+-->
+
+## Авторство и лицензирование
+
+<!-- Отметьте подходящие пункты, заменив пробел внутри скобок на X. -->
+
+- [ ] Я являюсь автором добавленных материалов или имею право их использовать
+- [ ] Для сторонних материалов указаны автор, источник и лицензия
+- [ ] Материалы с лицензией ShareAlike сохраняют требуемую лицензию
+- [ ] В Pull Request нет материалов с неизвестным происхождением
+
+## Проверки
+
+- [ ] Изменения относятся только к заявленной задаче
+- [ ] Я самостоятельно просмотрел итоговые изменения
+- [ ] Проект успешно собирается
+- [ ] Изменённая функциональность проверена локально
+- [ ] Сервер и клиент запускаются, если изменение затрагивает игру
+- [ ] Для визуальных изменений приложены скриншоты или видео
+- [ ] В репозиторий не добавлены временные и сгенерированные файлы
+
+## Дополнительная информация
+
+<!--
+Ссылки на связанные задачи, обсуждения, документацию или другую полезную информацию.
+Удалите раздел, если он не нужен.
+-->

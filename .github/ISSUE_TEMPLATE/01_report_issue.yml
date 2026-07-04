@@ -1,41 +1,96 @@
-name: Report an issue
-description: For issues that are not related to any other issue form.
+name: Сообщить об ошибке
+description: Сообщите об ошибке или некорректном поведении Infinite Aegis.
+title: "[BUG] "
+labels:
+  - "Type: Bug"
 body:
   - type: markdown
     attributes:
       value: |
-        Thank you for taking the time to fill out an issue. This template is intended for any issues that do not fit other issue templates.
-        For feedback or help running Space Station 14, please join our [Discord](https://discord.gg/rGvu9hKffJ).
+        Спасибо за сообщение об ошибке.
+
+        Перед созданием Issue убедитесь, что похожая проблема ещё не была зарегистрирована.
+
+        Для вопросов, предложений и обсуждений используйте Discord:
+        https://discord.gg/t8XAuymcDs
+
   - type: input
+    id: version
     attributes:
-      label: What version did the issue occur in?
-      description: You can find the version by opening the changelog in-game and looking at the bottom right corner of the changelog window.
-      placeholder: wizards/aa1337b
+      label: Версия
+      description: Укажите версию игры, номер сборки или хеш коммита, если он известен.
+      placeholder: Например, 627d398573
     validations:
       required: false
+
   - type: textarea
+    id: description
     attributes:
-      label: Description
-      description: |
-        A clear and concise description of what the issue is.
-        If the issue is visual in nature, consider posting a screenshot.
+      label: Описание проблемы
+      description: Подробно опишите, что произошло и какое поведение ожидалось.
+      placeholder: |
+        Фактическое поведение:
+
+        Ожидаемое поведение:
     validations:
       required: true
+
   - type: textarea
+    id: reproduction
     attributes:
-      label: Reproduction
-      description: List the steps required to reproduce the issue.
+      label: Шаги воспроизведения
+      description: Перечислите действия, после которых возникает проблема.
       placeholder: |
         1.
         2.
         3.
-        ...
     validations:
       required: true
-  - type: textarea
+
+  - type: dropdown
+    id: frequency
     attributes:
-      label: Additional Context
-      description: Add any other additional context about the issue here.
+      label: Частота возникновения
+      options:
+        - Возникает каждый раз
+        - Возникает часто
+        - Возникает иногда
+        - Произошло один раз
+        - Не удалось определить
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Логи
+      description: Приложите соответствующие логи или текст ошибки. Не публикуйте пароли, токены и другие секретные данные.
+      render: shell
     validations:
       required: false
 
+  - type: textarea
+    id: media
+    attributes:
+      label: Скриншоты или видео
+      description: Добавьте материалы, если они помогают понять проблему.
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Дополнительная информация
+      description: Укажите всё остальное, что может помочь при рассмотрении проблемы.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: Подтверждение
+      options:
+        - label: Я проверил, что похожая проблема ещё не была зарегистрирована.
+          required: true
+        - label: Я не включил в Issue пароли, токены или другие секретные данные.
+          required: true
