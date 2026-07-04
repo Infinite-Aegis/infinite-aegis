@@ -2,7 +2,7 @@ name: Сообщить о проблеме на карте
 description: Сообщите об ошибке карты, шаттла, локации или игрового грида.
 title: "[MAP] "
 labels:
-  - "Type: Mapping"
+  - "type: mapping"
 body:
   - type: markdown
     attributes:

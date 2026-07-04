@@ -2,7 +2,7 @@ name: Сообщить об ошибке
 description: Сообщите об ошибке или некорректном поведении Infinite Aegis.
 title: "[BUG] "
 labels:
-  - "Type: Bug"
+  - "type: bug"
 body:
   - type: markdown
     attributes:
