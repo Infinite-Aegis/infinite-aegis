@@ -1,42 +1,48 @@
-<!-- Guidelines: https://docs.spacestation14.io/en/getting-started/pr-guideline -->
+## Summary
 
-## About the PR
-<!-- What did you change? -->
+<!-- Briefly describe what this Pull Request changes. -->
 
-## Why / Balance
-<!-- Discuss how this would affect game balance or explain why it was changed. Link any relevant discussions or issues. -->
+## Motivation
 
-## Technical details
-<!-- Summary of code changes for easier review. -->
+<!-- Explain why this change is needed and what problem it solves. -->
 
-## Test plan
-<!--
-Describe how you tested the pull request, and how someone reviewing this PR can test it themselves.
--->
+## Changes
+
+<!-- List the main changes made in this Pull Request. -->
+
+-
+-
+-
+
+## Testing
+
+<!-- Describe how the changes were tested. -->
+
+- [ ] The project builds successfully
+- [ ] The affected functionality was tested locally
+- [ ] The server starts successfully
+- [ ] The client starts successfully
+- [ ] Additional automated tests were added or updated where applicable
 
 ## Media
-<!-- Attach media if the PR makes in-game changes (clothing, items, features, etc).
-Small fixes/refactors are exempt. Media may be used in SS14 progress reports with credit. -->
 
-## Requirements
-<!-- Confirm the following by placing an X in the brackets without spaces inside (for example: [X] ): -->
-- [ ] I have read and am following the [Pull Request and Changelog Guidelines](https://docs.spacestation14.com/en/general-development/codebase-info/pull-request-guidelines.html).
-- [ ] I have tested this pull request and written instructions on how to test it
-- [ ] I have added media to this PR or it does not require an in-game showcase.
-<!-- You should understand that not following the above may get your PR closed at maintainer’s discretion -->
-
-## Breaking changes
-<!-- List any breaking changes, including namespaces, public class/method/field changes, prototype renames; and provide instructions for fixing them.
-This will be posted in #codebase-changes. -->
-
-## Changelog
-<!-- Add a Changelog entry to make players aware of new features or changes that could affect gameplay.
-Make sure to read the guidelines and take this Changelog template out of the comment block in order for it to show up.
-Changelog must have a :cl: symbol, so the bot recognizes the changes and adds them to the game's changelog. -->
 <!--
-:cl:
-- add: Added fun!
-- remove: Removed fun!
-- tweak: Changed fun!
-- fix: Fixed fun!
+Add screenshots or video for visible in-game changes.
+Remove this section when media is not applicable.
 -->
+
+## Licensing and Attribution
+
+- [ ] I have the right to submit all code and materials included in this Pull Request
+- [ ] All third-party materials include the required author, source, and license information
+- [ ] No third-party material is incorrectly presented as proprietary Infinite Aegis content
+- [ ] ShareAlike materials retain their required license and attribution
+
+## Checklist
+
+- [ ] This Pull Request targets `main`
+- [ ] The branch contains only changes related to this task
+- [ ] I have reviewed my changes before submitting
+- [ ] I have not committed generated, temporary, or development-environment files
+- [ ] All required GitHub checks pass
+- [ ] All review conversations have been resolved
