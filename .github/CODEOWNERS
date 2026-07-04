@@ -1,43 +1,24 @@
-# Last match in file takes precedence.
+# Infinite Aegis CODEOWNERS
+# Last matching rule takes precedence.
 
-# Sorting by path instead of by who added it one day :(
-# this isn't how codeowners rules work pls read the first comment instead of trying to force a sorting order
+* @Infinite-Aegis/maintainers
 
-/Resources/ConfigPresets/WizardsDen/  @crazybrain23
-/Content.*/Administration/ @DrSmugleaf @crazybrain23
-/Resources/ServerInfo/ @crazybrain23
-/Resources/ServerInfo/Guidebook/ServerRules/ @crazybrain23
+/Content.Client/_InfiniteAegis/ @Infinite-Aegis/developers @Infinite-Aegis/maintainers
+/Content.Server/_InfiniteAegis/ @Infinite-Aegis/developers @Infinite-Aegis/maintainers
+/Content.Shared/_InfiniteAegis/ @Infinite-Aegis/developers @Infinite-Aegis/maintainers
 
-/Resources/Prototypes/Maps/** @Emisse @ArtisticRoomba @spanky-spanky
-/Resources/Maps/** @Emisse @ArtisticRoomba @spanky-spanky
+/Resources/Prototypes/_InfiniteAegis/ @Infinite-Aegis/developers @Infinite-Aegis/maintainers
+/Resources/Maps/_InfiniteAegis/ @Infinite-Aegis/mappers @Infinite-Aegis/maintainers
+/Resources/Textures/_InfiniteAegis/ @Infinite-Aegis/artists @Infinite-Aegis/maintainers
+/Resources/Audio/_InfiniteAegis/ @Infinite-Aegis/artists @Infinite-Aegis/maintainers
+/Resources/Locale/ @Infinite-Aegis/writers @Infinite-Aegis/maintainers
 
-/Resources/Prototypes/Body/ @DrSmugleaf @sowelipililimute # suffering
-/Resources/Prototypes/Entities/Mobs/Player/ @DrSmugleaf
-/Resources/Prototypes/Entities/Mobs/Species/ @DrSmugleaf
-/Resources/Prototypes/Guidebook/rules.yml @crazybrain23
-/Content.*/Body/ @DrSmugleaf @sowelipililimute
-/Content.*/Humanoid/ @sowelipililimute
-/Content.Client/Lobby/UI/Humanoid* @sowelipililimute
-/Content.YAMLLinter @DrSmugleaf
-/Content.Shared/Damage/ @DrSmugleaf
+/README.md @Infinite-Aegis/maintainers
+/README.en.md @Infinite-Aegis/maintainers
+/CONTRIBUTING.md @Infinite-Aegis/maintainers
+/SECURITY.md @Infinite-Aegis/maintainers
+/CODE_OF_CONDUCT.md @Infinite-Aegis/maintainers
+/LICENSE* @Infinite-Aegis/maintainers
+/THIRD-PARTY-NOTICES.md @Infinite-Aegis/maintainers
 
-/Content.*/Anomaly/ @TheShuEd
-/Resources/Prototypes/Entities/Structures/Specific/anomalies.yml @TheShuEd
-
-/Content.*/Forensics/ @ficcialfaint
-
-/Content.*/HeatContainer/ @slarticodefast
-
-/Content.*/Stunnable/ @Princess-Cheeseballs
-/Content.*/Nutrition/ @Princess-Cheeseballs
-/Content.*/EntityEffects @Princess-Cheeseballs @sowelipililimute
-
-# SKREEEE
-/Content.*.Database/ @PJB3005 @DrSmugleaf
-/Content.Shared.Database/Log*.cs @PJB3005 @DrSmugleaf @crazybrain23
-/Pow3r/ @PJB3005
-/Content.Server/Power/Pow3r/ @PJB3005
-
-/Content.Server/Discord/ @Simyon264
-
-/Content.*/Atmos/** @ArtisticRoomba
+/.github/ @Infinite-Aegis/maintainers
