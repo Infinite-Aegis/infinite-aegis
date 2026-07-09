@@ -1,0 +1,13 @@
+- type: entity
+  parent: BaseAction
+  id: ActionVenicleEject
+  name: Eject
+  description: Exit the vehicle.
+  components:
+  - type: Action
+    itemIconStyle: NoItem
+    icon:
+      sprite: Interface/Actions/actions_mecha.rsi
+      state: mech_eject
+  - type: InstantAction
+    event: !type:VenicleEjectEvent
