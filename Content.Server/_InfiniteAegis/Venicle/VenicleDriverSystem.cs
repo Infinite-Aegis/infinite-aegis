@@ -28,7 +28,7 @@ public sealed partial class VenicleDriverSystem : EntitySystem
 
     public override void Initialize()
     {
-        SubscribeLocalEvent<VenicleComponent, ComponentStartup>(OnStartup);
+        SubscribeLocalEvent<VenicleComponent, ComponentInit>(OnInit);
         SubscribeLocalEvent<VenicleComponent, ComponentShutdown>(OnShutdown);
         SubscribeLocalEvent<VenicleComponent, VenicleEjectEvent>(OnEjectAction);
         SubscribeLocalEvent<VenicleComponent, VenicleEntryEvent>(OnEntry);
@@ -41,7 +41,7 @@ public sealed partial class VenicleDriverSystem : EntitySystem
         SubscribeLocalEvent<VenicleComponent, EntRemovedFromContainerMessage>(OnEntRemoved);
     }
 
-    private void OnStartup(EntityUid uid, VenicleComponent component, ComponentStartup args)
+    private void OnInit(EntityUid uid, VenicleComponent component, ComponentInit args)
     {
         component.DriverSlot = _container.EnsureContainer<ContainerSlot>(uid, component.DriverSlotId);
     }

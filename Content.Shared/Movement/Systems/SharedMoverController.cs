@@ -152,9 +152,15 @@ public abstract partial class SharedMoverController : VirtualController
                 dirtied = true;
             }
 
-            if (relayTargetMover.CanMove != mover.CanMove)
+            #region IA
+
+            var targetCanMove = mover.CanMove && !IsMobMovementBlocked(relay.RelayEntity);
+
+            #endregion
+
+            if (relayTargetMover.CanMove != targetCanMove)
             {
-                relayTargetMover.CanMove = mover.CanMove;
+                relayTargetMover.CanMove = targetCanMove;
                 dirtied = true;
             }
 
@@ -165,6 +171,16 @@ public abstract partial class SharedMoverController : VirtualController
 
             return;
         }
+
+        #region IA
+
+        if (IsMobMovementBlocked(uid))
+        {
+            UsedMobMovement[uid] = false;
+            return;
+        }
+
+        #endregion
 
         if (!XformQuery.TryComp(entity.Owner, out var xform))
             return;

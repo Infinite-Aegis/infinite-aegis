@@ -13,49 +13,53 @@
   - type: InteractionOutline
   - type: Transform
     anchored: false
-  - type: MobCollision
-    fixtureId: mobcollision
-  - type: MobMover
   - type: InputMover
-  - type: MovementSpeedModifier
-    baseWalkSpeed: 2.25
-    baseSprintSpeed: 3.6
+  - type: BlockMovement
+    blockInteraction: false
+    blockUse: false
   - type: Physics
-    bodyType: KinematicController
+    bodyType: Dynamic
+    fixedRotation: false
   - type: GravityAffected
   - type: Fixtures
     fixtures:
       fix1:
         shape: !type:PolygonShape
           vertices:
-          - -0.6,-1.4
-          - 0.6,-1.4
-          - 0.6,1.4
-          - -0.6,1.4
-        density: 1000
+          - -0.45,-1.4
+          - 0.45,-1.4
+          - 0.6,-1.15
+          - 0.6,1.15
+          - 0.45,1.4
+          - -0.45,1.4
+          - -0.6,1.15
+          - -0.6,-1.15
+        density: 450
         mask:
         - FullTileMask
         layer:
         - WallLayer
         hard: true
-      mobcollision:
-        shape: !type:PolygonShape
-          vertices:
-          - -0.6,-1.4
-          - 0.6,-1.4
-          - 0.6,1.4
-          - -0.6,1.4
-        density: 1000
-        mask:
-        - FullTileLayer
-        hard: false
   - type: Venicle
+    maxForwardSpeed: 8
+    maxReverseSpeed: 3
+    forwardEngineForce: 6000
+    reverseEngineForce: 3500
+    brakeForce: 14000
+    rollingResistance: 250
+    aerodynamicDrag: 12
+    frontCorneringStiffness: 9000
+    rearCorneringStiffness: 11000
+    maxLateralGrip: 14000
+    maxSteeringAngle: 35
+    steeringRate: 2.5
+    steeringReturnRate: 4
+    wheelBase: 2.2
+    angularResistance: 2500
+    tileFrictionModifier: 0.15
     driverWhitelist:
       components:
       - HumanoidProfile
   - type: ContainerContainer
     containers:
       driver-slot: !type:ContainerSlot {}
-  - type: FootstepModifier
-    footstepSoundCollection:
-      path: /Audio/Mecha/sound_mecha_powerloader_step.ogg
