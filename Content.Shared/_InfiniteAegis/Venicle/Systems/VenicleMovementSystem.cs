@@ -5,6 +5,7 @@ using Content.Shared.Movement.Components;
 using Content.Shared.Movement.Events;
 using Content.Shared.Movement.Systems;
 using Content.Shared.Venicle.Components;
+using Robust.Shared.Maths;
 using Robust.Shared.Physics;
 using Robust.Shared.Physics.Components;
 using Robust.Shared.Physics.Controllers;
@@ -75,14 +76,14 @@ public sealed partial class VenicleMovementSystem : VirtualController
 
         UpdateSteering(uid, venicle, steeringInput, frameTime);
 
-        var worldRotation = _transform.GetWorldRotation(xform);
-        var right = worldRotation.RotateVec(Vector2.UnitX);
-        var forward = worldRotation.RotateVec(Vector2.UnitY);
+        var rotation = _transform.GetWorldRotation(xform);
+        var right = rotation.RotateVec(Vector2.UnitX);
+        var forward = rotation.RotateVec(-Vector2.UnitY);
         var forwardSpeed = Vector2.Dot(physics.LinearVelocity, forward);
 
         ApplyDrive(uid, physics, venicle, forward, forwardSpeed, throttleInput, frameTime);
         ApplyResistance(uid, physics, venicle, frameTime);
-        ApplyAxleGrip(uid, physics, xform, venicle, worldRotation, right, frameTime);
+        ApplyAxleGrip(uid, physics, venicle, rotation, right, frameTime);
         ApplyAngularResistance(uid, physics, venicle, frameTime);
     }
 
@@ -184,23 +185,22 @@ public sealed partial class VenicleMovementSystem : VirtualController
     private void ApplyAxleGrip(
         EntityUid uid,
         PhysicsComponent physics,
-        TransformComponent xform,
         VenicleComponent venicle,
-        Angle worldRotation,
+        Angle rotation,
         Vector2 rearRight,
         float frameTime)
     {
         var halfWheelBase = MathF.Max(0.01f, venicle.WheelBase) * 0.5f;
-        var frontPoint = Vector2.UnitY * halfWheelBase;
+        var frontPoint = -Vector2.UnitY * halfWheelBase;
         var rearPoint = -frontPoint;
         var steeringAngle = new Angle((float) venicle.MaxSteeringAngle.Theta * venicle.CurrentSteering);
-        var frontRight = (worldRotation + steeringAngle).RotateVec(Vector2.UnitX);
+        var frontRight = (rotation + steeringAngle).RotateVec(Vector2.UnitX);
 
         ApplyLateralGrip(
             uid,
             physics,
-            xform,
             frontPoint,
+            rotation,
             frontRight,
             venicle.FrontCorneringStiffness,
             venicle.MaxLateralGrip,
@@ -208,8 +208,8 @@ public sealed partial class VenicleMovementSystem : VirtualController
         ApplyLateralGrip(
             uid,
             physics,
-            xform,
             rearPoint,
+            rotation,
             rearRight,
             venicle.RearCorneringStiffness,
             venicle.MaxLateralGrip,
@@ -219,14 +219,15 @@ public sealed partial class VenicleMovementSystem : VirtualController
     private void ApplyLateralGrip(
         EntityUid uid,
         PhysicsComponent physics,
-        TransformComponent xform,
         Vector2 localPoint,
+        Angle rotation,
         Vector2 right,
         float stiffness,
         float maxGrip,
         float frameTime)
     {
-        var pointVelocity = _physics.GetLinearVelocity(uid, localPoint, physics, xform);
+        var lever = rotation.RotateVec(localPoint - physics.LocalCenter);
+        var pointVelocity = physics.LinearVelocity + Vector2Helpers.Cross(physics.AngularVelocity, lever);
         var lateralSpeed = Vector2.Dot(pointVelocity, right);
         if (MathF.Abs(lateralSpeed) < 0.0001f)
             return;
@@ -234,7 +235,9 @@ public sealed partial class VenicleMovementSystem : VirtualController
         var magnitude = MathF.Abs(lateralSpeed) * MathF.Max(0f, stiffness);
         magnitude = MathF.Min(magnitude, MathF.Max(0f, maxGrip));
         magnitude = MathF.Min(magnitude, MathF.Abs(lateralSpeed) * physics.Mass * 0.5f / frameTime);
-        _physics.ApplyForce(uid, -MathF.Sign(lateralSpeed) * right * magnitude, localPoint, body: physics);
+        var force = -MathF.Sign(lateralSpeed) * right * magnitude;
+        _physics.ApplyForce(uid, force, body: physics);
+        _physics.ApplyTorque(uid, Vector2Helpers.Cross(lever, force), body: physics);
     }
 
     private void ApplyAngularResistance(
@@ -246,7 +249,12 @@ public sealed partial class VenicleMovementSystem : VirtualController
         if (MathF.Abs(physics.AngularVelocity) < 0.0001f || physics.InvI <= 0f)
             return;
 
-        var magnitude = MathF.Abs(physics.AngularVelocity) * MathF.Max(0f, venicle.AngularResistance);
+        var steeringResistance = 1f +
+                                 (MathF.Max(0f, venicle.SteeringAngularResistanceModifier) - 1f) *
+                                 MathF.Abs(venicle.CurrentSteering);
+        var magnitude = MathF.Abs(physics.AngularVelocity) *
+                        MathF.Max(0f, venicle.AngularResistance) *
+                        steeringResistance;
         magnitude = MathF.Min(magnitude, MathF.Abs(physics.AngularVelocity) / physics.InvI / frameTime);
         _physics.ApplyTorque(uid, -MathF.Sign(physics.AngularVelocity) * magnitude, body: physics);
     }

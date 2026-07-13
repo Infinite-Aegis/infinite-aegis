@@ -51,7 +51,7 @@ public sealed partial class VenicleComponent : Component
     public float AerodynamicDrag = 12f;
 
     [DataField]
-    public float FrontCorneringStiffness = 9000f;
+    public float FrontCorneringStiffness = 12000f;
 
     [DataField]
     public float RearCorneringStiffness = 11000f;
@@ -63,7 +63,7 @@ public sealed partial class VenicleComponent : Component
     public Angle MaxSteeringAngle = Angle.FromDegrees(35);
 
     [DataField]
-    public float SteeringRate = 2.5f;
+    public float SteeringRate = 4f;
 
     [DataField]
     public float SteeringReturnRate = 4f;
@@ -72,10 +72,13 @@ public sealed partial class VenicleComponent : Component
     public float WheelBase = 2.2f;
 
     [DataField]
-    public float AngularResistance = 2500f;
+    public float AngularResistance = 1500f;
 
     [DataField]
-    public float TileFrictionModifier = 0.15f;
+    public float SteeringAngularResistanceModifier = 0.25f;
+
+    [DataField]
+    public float TileFrictionModifier = 0.05f;
 
     [ViewVariables, AutoNetworkedField]
     public float CurrentSteering;
