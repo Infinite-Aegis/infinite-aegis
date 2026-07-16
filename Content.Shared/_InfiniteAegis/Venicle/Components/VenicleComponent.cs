@@ -1,3 +1,4 @@
+using System.Numerics;
 using Content.Shared.Whitelist;
 using Robust.Shared.Containers;
 using Robust.Shared.GameStates;
@@ -9,13 +10,19 @@ namespace Content.Shared.Venicle.Components;
 public sealed partial class VenicleComponent : Component
 {
     [DataField]
-    public string DriverSlotId = "driver-slot";
+    public List<VenicleSeatDefinition> Seats = new();
 
     [ViewVariables]
-    public ContainerSlot DriverSlot = default!;
+    public Dictionary<string, ContainerSlot> SeatContainers = new();
+
+    [ViewVariables]
+    public Dictionary<string, EntityUid> SeatMarkers = new();
 
     [DataField]
-    public EntityWhitelist? DriverWhitelist;
+    public EntityWhitelist? OccupantWhitelist;
+
+    [DataField]
+    public EntProtoId SeatMarkerPrototype = "VenicleSeatMarker";
 
     [DataField]
     public float EntryDelay = 3f;
@@ -27,7 +34,10 @@ public sealed partial class VenicleComponent : Component
     public EntProtoId EjectAction = "ActionVenicleEject";
 
     [DataField]
-    public EntityUid? EjectActionEntity;
+    public float MaxSeatInteractionSpeed = 0.15f;
+
+    [DataField]
+    public float MaxSeatInteractionAngularSpeed = 0.1f;
 
     [DataField]
     public float MaxForwardSpeed = 8f;
@@ -82,4 +92,20 @@ public sealed partial class VenicleComponent : Component
 
     [ViewVariables, AutoNetworkedField]
     public float CurrentSteering;
+}
+
+[DataDefinition]
+public sealed partial class VenicleSeatDefinition
+{
+    [DataField(required: true)]
+    public string Id = string.Empty;
+
+    [DataField]
+    public bool Driver;
+
+    [DataField(required: true)]
+    public Vector2 OccupantOffset;
+
+    [DataField(required: true)]
+    public Vector2 ExitOffset;
 }

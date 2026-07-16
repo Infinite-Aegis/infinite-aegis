@@ -1,4 +1,20 @@
 - type: entity
+  id: VenicleSeatMarker
+  categories: [ HideSpawnMenu ]
+  name: vehicle seat
+  components:
+  - type: VenicleSeat
+  - type: Clickable
+    bounds:
+      all: "-0.3,-0.3,0.3,0.3"
+  - type: Sprite
+    sprite: Interface/Actions/actions_mecha.rsi
+    state: mech_seat_swap
+    drawdepth: Effects
+    color: "#ffffff00"
+    scale: 0.55, 0.55
+
+- type: entity
   id: Moskvich
   name: moskvich
   description: A compact drivable vehicle.
@@ -9,8 +25,6 @@
     drawdepth: Mobs
     sprite: _InfiniteAegis/Objects/Vehicles/moskvich.rsi
     state: m1
-  - type: Clickable
-  - type: InteractionOutline
   - type: Transform
     anchored: false
   - type: InputMover
@@ -41,6 +55,22 @@
         - WallLayer
         hard: true
   - type: Venicle
+    maxSeatInteractionSpeed: 0.15
+    maxSeatInteractionAngularSpeed: 0.1
+    seats:
+    - id: driver
+      driver: true
+      occupantOffset: -0.28,-0.45
+      exitOffset: -0.85,-0.45
+    - id: front-passenger
+      occupantOffset: 0.28,-0.45
+      exitOffset: 0.85,-0.45
+    - id: rear-left-passenger
+      occupantOffset: -0.28,0.45
+      exitOffset: -0.85,0.45
+    - id: rear-right-passenger
+      occupantOffset: 0.28,0.45
+      exitOffset: 0.85,0.45
     maxForwardSpeed: 8
     maxReverseSpeed: 3
     forwardEngineForce: 6000
@@ -58,9 +88,6 @@
     angularResistance: 1500
     steeringAngularResistanceModifier: 0.25
     tileFrictionModifier: 0.05
-    driverWhitelist:
+    occupantWhitelist:
       components:
       - HumanoidProfile
-  - type: ContainerContainer
-    containers:
-      driver-slot: !type:ContainerSlot {}

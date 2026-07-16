@@ -1,3 +1,3 @@
-venicle-verb-enter = Сесть
-venicle-verb-exit = Высадить водителя
-venicle-no-enter = Вы не можете управлять этим.
+venicle-no-enter = Вы не можете сесть в эту машину.
+venicle-seat-occupied = Это место занято.
+venicle-moving = Нельзя садиться или выходить, пока машина движется.
