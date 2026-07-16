@@ -26,7 +26,7 @@ using MSLogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Content.Server.Database
 {
-    public interface IServerDbManager
+    public partial interface IServerDbManager
     {
         void Init();
 
@@ -102,7 +102,7 @@ namespace Content.Server.Database
             NetUserId? userId,
             ImmutableArray<byte>? hwId,
             ImmutableArray<ImmutableArray<byte>>? modernHWIds,
-            bool includeUnbanned=true,
+            bool includeUnbanned = true,
             BanType type = BanType.Server);
 
         Task<BanDef> AddBanAsync(BanDef ban);
@@ -511,7 +511,7 @@ namespace Content.Server.Database
             NetUserId? userId,
             ImmutableArray<byte>? hwId,
             ImmutableArray<ImmutableArray<byte>>? modernHWIds,
-            bool includeUnbanned=true,
+            bool includeUnbanned = true,
             BanType type = BanType.Server)
         {
             DbReadOpsMetric.Inc();

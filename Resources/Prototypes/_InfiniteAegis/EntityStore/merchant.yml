@@ -1,0 +1,30 @@
+- type: entity
+  id: EntityStoreAutoDealer
+  parent: BaseComputer
+  name: auto dealer terminal
+  description: A terminal for purchasing vehicles tied to your character.
+  components:
+  - type: Sprite
+    layers:
+    - map: ["computerLayerBody"]
+      state: computer
+    - map: ["computerLayerKeyboard"]
+      state: generic_keyboard
+    - map: ["computerLayerScreen"]
+      state: shuttle
+    - map: ["computerLayerKeys"]
+      state: generic_keys
+    - map: ["enum.WiresVisualLayers.MaintenancePanel"]
+      state: generic_panel_open
+  - type: EntityStoreMerchant
+    offers:
+    - EntityStoreOfferMoskvich
+  - type: ActivatableUI
+    singleUser: true
+    key: enum.EntityStoreUiKey.Key
+  - type: UserInterface
+    interfaces:
+      enum.EntityStoreUiKey.Key:
+        type: EntityStoreBoundUserInterface
+      enum.WiresUiKey.Key:
+        type: WiresBoundUserInterface

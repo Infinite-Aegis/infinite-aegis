@@ -1,0 +1,11 @@
+<Control xmlns="https://spacestation14.io">
+    <BoxContainer Orientation="Vertical" Margin="6">
+        <Label Name="NameLabel" />
+        <PanelContainer StyleClasses="HighDivider" Margin="0 2 0 4" />
+        <BoxContainer Orientation="Horizontal" HorizontalExpand="True">
+            <TextureRect Name="Icon" MinSize="64 64" Stretch="KeepAspectCentered" Margin="0 0 8 0" />
+            <RichTextLabel Name="DescriptionLabel" HorizontalExpand="True" VerticalAlignment="Top" />
+            <Button Name="BuyButton" MinWidth="110" Margin="8 0 0 0" VerticalAlignment="Center" />
+        </BoxContainer>
+    </BoxContainer>
+</Control>

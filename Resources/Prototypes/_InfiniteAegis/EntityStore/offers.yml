@@ -1,0 +1,5 @@
+- type: entityStoreOffer
+  id: EntityStoreOfferMoskvich
+  product: Moskvich
+  description: entity-store-offer-moskvich-description
+  price: 0

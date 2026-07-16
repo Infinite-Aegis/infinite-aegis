@@ -1,0 +1,16 @@
+<DefaultWindow
+    xmlns="https://spacestation14.io"
+    Title="{Loc 'entity-store-title'}"
+    MinSize="560 420"
+    SetSize="720 560">
+    <BoxContainer Orientation="Vertical" Margin="8">
+        <BoxContainer Orientation="Horizontal" Margin="0 0 0 8">
+            <Label Text="{Loc 'entity-store-dealer-name'}" HorizontalExpand="True" />
+            <Label Name="BalanceLabel" />
+        </BoxContainer>
+        <PanelContainer StyleClasses="HighDivider" Margin="0 0 0 6" />
+        <ScrollContainer HScrollEnabled="False" VerticalExpand="True">
+            <BoxContainer Name="OffersContainer" Orientation="Vertical" HorizontalExpand="True" />
+        </ScrollContainer>
+    </BoxContainer>
+</DefaultWindow>
