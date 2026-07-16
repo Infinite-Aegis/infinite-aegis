@@ -85,7 +85,19 @@ public sealed partial class EntityStoreMerchantSystem : EntitySystem
 
             var slot = _preferences.GetPreferences(session.UserId).SelectedCharacterIndex;
             var characterState = await _database.GetEntityStoreCharacterStateAsync(session.UserId, slot);
-            if (characterState == null || characterState.OwnedOffers.Contains(offer.ID))
+            if (!TryGetValidatedSession(merchant, actor, out var refreshedSession) ||
+                refreshedSession.UserId != session.UserId)
+            {
+                return;
+            }
+
+            if (characterState == null)
+            {
+                _popup.PopupEntity(Loc.GetString("entity-store-purchase-failed"), actor, actor);
+                return;
+            }
+
+            if (characterState.OwnedOffers.Contains(offer.ID))
             {
                 _popup.PopupEntity(Loc.GetString("entity-store-already-owned"), actor, actor);
                 return;
@@ -119,6 +131,9 @@ public sealed partial class EntityStoreMerchantSystem : EntitySystem
                 serializedState,
                 offer.Price);
 
+            if (!Exists(actor))
+                return;
+
             if (result.Status == EntityStorePurchaseStatus.Success)
             {
                 _popup.PopupEntity(Loc.GetString("entity-store-purchase-success"), actor, actor);
@@ -149,8 +164,12 @@ public sealed partial class EntityStoreMerchantSystem : EntitySystem
 
         var slot = _preferences.GetPreferences(session.UserId).SelectedCharacterIndex;
         var characterState = await _database.GetEntityStoreCharacterStateAsync(session.UserId, slot);
-        if (characterState == null || !Exists(merchant.Owner) || !Exists(actor))
+        if (characterState == null ||
+            !TryGetValidatedSession(merchant, actor, out var refreshedSession) ||
+            refreshedSession.UserId != session.UserId)
+        {
             return;
+        }
 
         var offers = new List<EntityStoreOfferData>(merchant.Comp.Offers.Count);
         foreach (var offerId in merchant.Comp.Offers)
