@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Robust.Shared.Network;
 
@@ -10,6 +11,14 @@ public sealed partial class ServerDbManager
     {
         DbReadOpsMetric.Inc();
         return RunDbCommand(() => _db.GetEntityStoreCharacterStateAsync(userId, characterSlot));
+    }
+
+    public Task<List<EntityStorePersistentEntityData>> GetPersistentCharacterEntitiesAsync(
+        NetUserId userId,
+        int characterSlot)
+    {
+        DbReadOpsMetric.Inc();
+        return RunDbCommand(() => _db.GetPersistentCharacterEntitiesAsync(userId, characterSlot));
     }
 
     public Task<EntityStorePurchaseResult> PurchasePersistentEntityAsync(

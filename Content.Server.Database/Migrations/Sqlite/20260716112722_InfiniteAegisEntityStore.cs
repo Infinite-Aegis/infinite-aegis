@@ -12,24 +12,6 @@ namespace Content.Server.Database.Migrations.Sqlite
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "character_wallet",
-                columns: table => new
-                {
-                    profile_id = table.Column<int>(type: "INTEGER", nullable: false),
-                    balance = table.Column<long>(type: "INTEGER", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_character_wallet", x => x.profile_id);
-                    table.ForeignKey(
-                        name: "FK_character_wallet_profile_profile_id",
-                        column: x => x.profile_id,
-                        principalTable: "profile",
-                        principalColumn: "profile_id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "persistent_character_entity",
                 columns: table => new
                 {
@@ -54,10 +36,9 @@ namespace Content.Server.Database.Migrations.Sqlite
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_persistent_character_entity_profile_id_offer_id",
+                name: "IX_persistent_character_entity_profile_id",
                 table: "persistent_character_entity",
-                columns: new[] { "profile_id", "offer_id" },
-                unique: true);
+                column: "profile_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_persistent_character_entity_purchase_request_id",
@@ -69,9 +50,6 @@ namespace Content.Server.Database.Migrations.Sqlite
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "character_wallet");
-
             migrationBuilder.DropTable(
                 name: "persistent_character_entity");
         }

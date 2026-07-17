@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using Content.Server.Database;
 using Content.Shared.EntityStore;
@@ -32,7 +33,7 @@ public sealed partial class PersistentCharacterEntitySystem : EntitySystem
         serializedState = string.Empty;
         var entity = Spawn(prototype, MapCoordinates.Nullspace);
         var persistence = EnsureComp<PersistentCharacterEntityComponent>(entity);
-        persistence.PersistentEntityId = persistentEntityId;
+        persistence.PersistentEntityId = persistentEntityId.ToString();
         persistence.CharacterProfileId = profileId;
         persistence.CharacterOwner = owner;
         persistence.Revision = 0;
@@ -41,7 +42,8 @@ public sealed partial class PersistentCharacterEntitySystem : EntitySystem
         try
         {
             using var writer = new StringWriter();
-            if (!_mapLoader.TrySaveEntity(entity, writer, SerializationOptions.Default))
+            var options = SerializationOptions.Default with { Category = FileCategory.Save };
+            if (!_mapLoader.TrySaveGeneric(entity, writer, out _, options))
                 return false;
 
             serializedState = writer.ToString();
@@ -58,21 +60,22 @@ public sealed partial class PersistentCharacterEntitySystem : EntitySystem
         ref EntityTerminatingEvent args)
     {
         if (entity.Comp.SuppressSave ||
-            entity.Comp.PersistentEntityId == Guid.Empty ||
+            !Guid.TryParse(entity.Comp.PersistentEntityId, out var persistentEntityId) ||
             entity.Comp.CharacterProfileId <= 0)
         {
             return;
         }
 
         using var writer = new StringWriter();
-        if (!_mapLoader.TrySaveEntity(entity.Owner, writer, SerializationOptions.Default))
+        var options = SerializationOptions.Default with { Category = FileCategory.Save };
+        if (!_mapLoader.TrySaveGeneric(entity.Owner, writer, out _, options))
         {
             Log.Error($"Failed to serialize persistent entity {ToPrettyString(entity.Owner)} before deletion.");
             return;
         }
 
         var updated = _database.UpdatePersistentEntityStateAsync(
-                entity.Comp.PersistentEntityId,
+                persistentEntityId,
                 entity.Comp.CharacterProfileId,
                 entity.Comp.Revision,
                 writer.ToString())

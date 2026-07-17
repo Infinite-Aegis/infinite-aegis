@@ -792,22 +792,6 @@ namespace Content.Server.Database.Migrations.Postgres
                     b.ToTable("blacklist", (string)null);
                 });
 
-            modelBuilder.Entity("Content.Server.Database.CharacterWallet", b =>
-                {
-                    b.Property<int>("ProfileId")
-                        .HasColumnType("integer")
-                        .HasColumnName("profile_id");
-
-                    b.Property<long>("Balance")
-                        .HasColumnType("bigint")
-                        .HasColumnName("balance");
-
-                    b.HasKey("ProfileId")
-                        .HasName("PK_character_wallet");
-
-                    b.ToTable("character_wallet", (string)null);
-                });
-
             modelBuilder.Entity("Content.Server.Database.ConnectionLog", b =>
                 {
                     b.Property<int>("Id")
@@ -973,10 +957,9 @@ namespace Content.Server.Database.Migrations.Postgres
                     b.HasKey("Id")
                         .HasName("PK_persistent_character_entity");
 
-                    b.HasIndex("PurchaseRequestId")
-                        .IsUnique();
+                    b.HasIndex("ProfileId");
 
-                    b.HasIndex("ProfileId", "OfferId")
+                    b.HasIndex("PurchaseRequestId")
                         .IsUnique();
 
                     b.ToTable("persistent_character_entity", (string)null);
@@ -1857,18 +1840,6 @@ namespace Content.Server.Database.Migrations.Postgres
                     b.Navigation("Ban");
 
                     b.Navigation("Round");
-                });
-
-            modelBuilder.Entity("Content.Server.Database.CharacterWallet", b =>
-                {
-                    b.HasOne("Content.Server.Database.Profile", "Profile")
-                        .WithOne()
-                        .HasForeignKey("Content.Server.Database.CharacterWallet", "ProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_character_wallet_profile_profile_id");
-
-                    b.Navigation("Profile");
                 });
 
             modelBuilder.Entity("Content.Server.Database.ConnectionLog", b =>

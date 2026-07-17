@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System;
 
 namespace Content.Server.Database;
 
@@ -6,18 +6,23 @@ public enum EntityStorePurchaseStatus : byte
 {
     Success,
     CharacterNotFound,
-    AlreadyOwned,
+    DuplicateRequest,
     InsufficientFunds,
     InvalidRequest,
     Failed,
 }
 
-public sealed record EntityStoreCharacterState(
+public sealed record EntityStoreCharacterState(int ProfileId);
+
+public sealed record EntityStorePersistentEntityData(
+    Guid Id,
     int ProfileId,
-    long Balance,
-    HashSet<string> OwnedOffers);
+    string OfferId,
+    string PrototypeId,
+    Guid PurchaseRequestId,
+    string EntityState,
+    long Revision);
 
 public sealed record EntityStorePurchaseResult(
     EntityStorePurchaseStatus Status,
-    int? ProfileId = null,
-    long? Balance = null);
+    int? ProfileId = null);

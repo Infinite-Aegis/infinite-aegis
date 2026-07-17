@@ -1,3 +1,4 @@
+using System.Linq;
 using Content.IntegrationTests.Fixtures;
 using Content.Server.Database;
 using Content.Shared.Preferences;
@@ -23,11 +24,6 @@ public sealed class EntityStoreDatabaseTests : GameTest
 
         var initial = await db.GetEntityStoreCharacterStateAsync(userId, 0);
         Assert.That(initial, Is.Not.Null);
-        Assert.Multiple(() =>
-        {
-            Assert.That(initial!.Balance, Is.Zero);
-            Assert.That(initial.OwnedOffers, Is.Empty);
-        });
 
         var persistentId = Guid.NewGuid();
         var requestId = Guid.NewGuid();
@@ -43,16 +39,28 @@ public sealed class EntityStoreDatabaseTests : GameTest
 
         Assert.That(purchase.Status, Is.EqualTo(EntityStorePurchaseStatus.Success));
 
+        var secondPersistentId = Guid.NewGuid();
+        var secondRequestId = Guid.NewGuid();
         var duplicateOffer = await db.PurchasePersistentEntityAsync(
             userId,
             0,
-            Guid.NewGuid(),
-            Guid.NewGuid(),
+            secondPersistentId,
+            secondRequestId,
             "EntityStoreOfferMoskvich",
             "Moskvich",
             "duplicate-state",
             0);
-        Assert.That(duplicateOffer.Status, Is.EqualTo(EntityStorePurchaseStatus.AlreadyOwned));
+        Assert.That(duplicateOffer.Status, Is.EqualTo(EntityStorePurchaseStatus.Success));
+
+        var entities = await db.GetPersistentCharacterEntitiesAsync(userId, 0);
+        Assert.Multiple(() =>
+        {
+            Assert.That(entities, Has.Count.EqualTo(2));
+            Assert.That(entities.Select(x => x.Id), Is.EquivalentTo([persistentId, secondPersistentId]));
+            Assert.That(entities.Select(x => x.PurchaseRequestId), Is.EquivalentTo([requestId, secondRequestId]));
+            Assert.That(entities.All(x => x.OfferId == "EntityStoreOfferMoskvich"), Is.True);
+            Assert.That(entities.All(x => x.PrototypeId == "Moskvich"), Is.True);
+        });
 
         var replayedRequest = await db.PurchasePersistentEntityAsync(
             userId,
@@ -63,7 +71,7 @@ public sealed class EntityStoreDatabaseTests : GameTest
             "Moskvich",
             "replayed-state",
             0);
-        Assert.That(replayedRequest.Status, Is.EqualTo(EntityStorePurchaseStatus.AlreadyOwned));
+        Assert.That(replayedRequest.Status, Is.EqualTo(EntityStorePurchaseStatus.DuplicateRequest));
 
         Assert.That(await db.UpdatePersistentEntityStateAsync(
             persistentId,
@@ -78,10 +86,11 @@ public sealed class EntityStoreDatabaseTests : GameTest
 
         await db.SaveCharacterSlotAsync(userId, null, 0);
         Assert.That(await db.GetEntityStoreCharacterStateAsync(userId, 0), Is.Null);
+        Assert.That(await db.GetPersistentCharacterEntitiesAsync(userId, 0), Is.Empty);
     }
 
     [Test]
-    public async Task PurchaseDoesNotChargeWhenFundsAreInsufficient()
+    public async Task PaidPurchaseIsRejectedWithoutCurrencySystem()
     {
         var db = GetDb(Pair.Server);
         var userId = new NetUserId(Guid.NewGuid());
@@ -98,12 +107,7 @@ public sealed class EntityStoreDatabaseTests : GameTest
             1);
 
         Assert.That(result.Status, Is.EqualTo(EntityStorePurchaseStatus.InsufficientFunds));
-        var state = await db.GetEntityStoreCharacterStateAsync(userId, 0);
-        Assert.Multiple(() =>
-        {
-            Assert.That(state!.Balance, Is.Zero);
-            Assert.That(state.OwnedOffers, Is.Empty);
-        });
+        Assert.That(await db.GetPersistentCharacterEntitiesAsync(userId, 0), Is.Empty);
     }
 
     private static ServerDbSqlite GetDb(RobustIntegrationTest.ServerIntegrationInstance server)

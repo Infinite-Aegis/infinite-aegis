@@ -15,15 +15,13 @@ public sealed class EntityStoreOfferData
     public readonly string ProductEntity;
     public readonly string? DescriptionLoc;
     public readonly int Price;
-    public readonly bool Owned;
 
-    public EntityStoreOfferData(string id, string productEntity, string? descriptionLoc, int price, bool owned)
+    public EntityStoreOfferData(string id, string productEntity, string? descriptionLoc, int price)
     {
         Id = id;
         ProductEntity = productEntity;
         DescriptionLoc = descriptionLoc;
         Price = price;
-        Owned = owned;
     }
 }
 

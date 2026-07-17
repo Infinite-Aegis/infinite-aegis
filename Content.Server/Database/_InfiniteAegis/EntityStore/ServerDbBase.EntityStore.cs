@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,17 +24,26 @@ public abstract partial class ServerDbBase
         if (profileId == null)
             return null;
 
-        var balance = await db.DbContext.CharacterWallet
-            .Where(x => x.ProfileId == profileId.Value)
-            .Select(x => (long?) x.Balance)
-            .SingleOrDefaultAsync() ?? 0;
+        return new EntityStoreCharacterState(profileId.Value);
+    }
 
-        var ownedOffers = await db.DbContext.PersistentCharacterEntity
-            .Where(x => x.ProfileId == profileId.Value)
-            .Select(x => x.OfferId)
-            .ToHashSetAsync();
+    public async Task<List<EntityStorePersistentEntityData>> GetPersistentCharacterEntitiesAsync(
+        NetUserId userId,
+        int characterSlot)
+    {
+        await using var db = await GetDb();
 
-        return new EntityStoreCharacterState(profileId.Value, balance, ownedOffers);
+        return await db.DbContext.PersistentCharacterEntity
+            .Where(x => x.Profile.Preference.UserId == userId.UserId && x.Profile.Slot == characterSlot)
+            .Select(x => new EntityStorePersistentEntityData(
+                x.Id,
+                x.ProfileId,
+                x.OfferId,
+                x.PrototypeId,
+                x.PurchaseRequestId,
+                x.EntityState,
+                x.Revision))
+            .ToListAsync();
     }
 
     public async Task<EntityStorePurchaseResult> PurchasePersistentEntityAsync(
@@ -70,30 +80,14 @@ public abstract partial class ServerDbBase
                 return new EntityStorePurchaseResult(EntityStorePurchaseStatus.CharacterNotFound);
 
             var duplicate = await db.DbContext.PersistentCharacterEntity.AnyAsync(x =>
-                x.PurchaseRequestId == purchaseRequestId ||
-                x.ProfileId == profileId.Value && x.OfferId == offerId);
+                x.PurchaseRequestId == purchaseRequestId);
 
             if (duplicate)
-                return new EntityStorePurchaseResult(EntityStorePurchaseStatus.AlreadyOwned, profileId);
+                return new EntityStorePurchaseResult(EntityStorePurchaseStatus.DuplicateRequest, profileId);
 
-            var wallet = await db.DbContext.CharacterWallet.SingleOrDefaultAsync(x => x.ProfileId == profileId.Value);
-            if (wallet == null)
-            {
-                wallet = new CharacterWallet
-                {
-                    ProfileId = profileId.Value,
-                    Balance = 0,
-                };
-                db.DbContext.CharacterWallet.Add(wallet);
-            }
+            if (price > 0)
+                return new EntityStorePurchaseResult(EntityStorePurchaseStatus.InsufficientFunds, profileId);
 
-            if (wallet.Balance < price)
-                return new EntityStorePurchaseResult(
-                    EntityStorePurchaseStatus.InsufficientFunds,
-                    profileId,
-                    wallet.Balance);
-
-            wallet.Balance -= price;
             db.DbContext.PersistentCharacterEntity.Add(new PersistentCharacterEntity
             {
                 Id = persistentEntityId,
@@ -108,15 +102,12 @@ public abstract partial class ServerDbBase
 
             await db.DbContext.SaveChangesAsync();
             await transaction.CommitAsync();
-            return new EntityStorePurchaseResult(
-                EntityStorePurchaseStatus.Success,
-                profileId,
-                wallet.Balance);
+            return new EntityStorePurchaseResult(EntityStorePurchaseStatus.Success, profileId);
         }
         catch (DbUpdateException)
         {
             await transaction.RollbackAsync();
-            return new EntityStorePurchaseResult(EntityStorePurchaseStatus.AlreadyOwned);
+            return new EntityStorePurchaseResult(EntityStorePurchaseStatus.DuplicateRequest);
         }
         catch
         {

@@ -8,7 +8,7 @@ namespace Content.Shared.EntityStore;
 public sealed partial class PersistentCharacterEntityComponent : Component
 {
     [DataField(required: true)]
-    public Guid PersistentEntityId;
+    public string PersistentEntityId = string.Empty;
 
     [DataField(required: true)]
     public int CharacterProfileId;

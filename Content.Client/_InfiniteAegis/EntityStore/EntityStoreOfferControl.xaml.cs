@@ -36,12 +36,9 @@ public sealed partial class EntityStoreOfferControl : Control
             DescriptionLabel.SetMessage(FormattedMessage.FromUnformatted(offer.DescriptionLoc ?? string.Empty));
         }
 
-        BuyButton.Text = offer.Owned
-            ? Loc.GetString("entity-store-owned")
-            : offer.Price == 0
-                ? Loc.GetString("entity-store-free")
-                : Loc.GetString("entity-store-price", ("price", offer.Price));
-        BuyButton.Disabled = offer.Owned;
+        BuyButton.Text = offer.Price == 0
+            ? Loc.GetString("entity-store-free")
+            : Loc.GetString("entity-store-price", ("price", offer.Price));
         BuyButton.OnButtonDown += _ =>
         {
             BuyButton.Disabled = true;

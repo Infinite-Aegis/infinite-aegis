@@ -19,6 +19,8 @@ namespace Content.Server.EntityStore;
 
 public sealed partial class EntityStoreMerchantSystem : EntitySystem
 {
+    private const long Balance = 0;
+
     [Dependency] private IServerDbManager _database = default!;
     [Dependency] private IServerPreferencesManager _preferences = default!;
     [Dependency] private ISharedPlayerManager _players = default!;
@@ -97,13 +99,7 @@ public sealed partial class EntityStoreMerchantSystem : EntitySystem
                 return;
             }
 
-            if (characterState.OwnedOffers.Contains(offer.ID))
-            {
-                _popup.PopupEntity(Loc.GetString("entity-store-already-owned"), actor, actor);
-                return;
-            }
-
-            if (characterState.Balance < offer.Price)
+            if (Balance < offer.Price)
             {
                 _popup.PopupEntity(Loc.GetString("entity-store-insufficient-funds"), actor, actor);
                 return;
@@ -142,7 +138,6 @@ public sealed partial class EntityStoreMerchantSystem : EntitySystem
             {
                 var message = result.Status switch
                 {
-                    EntityStorePurchaseStatus.AlreadyOwned => "entity-store-already-owned",
                     EntityStorePurchaseStatus.InsufficientFunds => "entity-store-insufficient-funds",
                     _ => "entity-store-purchase-failed",
                 };
@@ -181,14 +176,13 @@ public sealed partial class EntityStoreMerchantSystem : EntitySystem
                 offer.ID,
                 offer.Product.Id,
                 offer.Description?.Id,
-                offer.Price,
-                characterState.OwnedOffers.Contains(offer.ID)));
+                offer.Price));
         }
 
         _ui.SetUiState(
             merchant.Owner,
             EntityStoreUiKey.Key,
-            new EntityStoreBoundUserInterfaceState(characterState.Balance, offers));
+            new EntityStoreBoundUserInterfaceState(Balance, offers));
     }
 
     private bool TryGetValidatedSession(
