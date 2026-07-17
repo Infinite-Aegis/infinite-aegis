@@ -16,5 +16,8 @@ public sealed partial class VenicleSeatComponent : Component
     public Vector2 MarkerOffset;
 
     [ViewVariables]
-    public EntityUid? PendingUser;
+    public EntityUid? PendingOccupant;
+
+    [ViewVariables, AutoNetworkedField]
+    public bool Available = true;
 }

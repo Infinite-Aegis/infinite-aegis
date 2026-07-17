@@ -64,6 +64,8 @@ public sealed partial class DragDropSystem : SharedDragDropSystem
     /// </summary>
     private EntityUid? _draggedEntity;
 
+    public EntityUid? DraggedEntity => _state == DragState.Dragging ? _draggedEntity : null;
+
     /// <summary>
     /// If an entity is being dragged is there a drag shadow.
     /// </summary>

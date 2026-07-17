@@ -1,7 +1,7 @@
 using Content.Shared.Access.Components;
-using Content.Shared.ActionBlocker;
 using Content.Shared.Actions;
 using Content.Shared.DoAfter;
+using Content.Shared.DragDrop;
 using Content.Shared.Interaction;
 using Content.Shared.Movement.Components;
 using Content.Shared.Movement.Systems;
@@ -9,27 +9,26 @@ using Content.Shared.Popups;
 using Content.Shared.Storage.Components;
 using Content.Shared.Venicle;
 using Content.Shared.Venicle.Components;
-using Content.Shared.Whitelist;
+using Content.Shared.Venicle.Systems;
 using Robust.Server.Containers;
 using Robust.Shared.Containers;
 using Robust.Shared.Map;
-using Robust.Shared.Physics.Components;
 
 namespace Content.Server.Venicle;
 
-public sealed partial class VenicleSeatSystem : EntitySystem
+public sealed partial class VenicleSeatSystem : SharedVenicleSeatSystem
 {
-    [Dependency] private ActionBlockerSystem _actionBlocker = default!;
     [Dependency] private SharedActionsSystem _actions = default!;
     [Dependency] private ContainerSystem _container = default!;
     [Dependency] private SharedDoAfterSystem _doAfter = default!;
     [Dependency] private SharedMoverController _mover = default!;
     [Dependency] private SharedPopupSystem _popup = default!;
     [Dependency] private SharedTransformSystem _transform = default!;
-    [Dependency] private EntityWhitelistSystem _whitelist = default!;
 
     public override void Initialize()
     {
+        base.Initialize();
+
         SubscribeLocalEvent<VenicleComponent, ComponentInit>(OnInit);
         SubscribeLocalEvent<VenicleComponent, MapInitEvent>(OnMapInit);
         SubscribeLocalEvent<VenicleComponent, ComponentShutdown>(OnShutdown);
@@ -40,6 +39,7 @@ public sealed partial class VenicleSeatSystem : EntitySystem
         SubscribeLocalEvent<VenicleComponent, GetAdditionalAccessEvent>(OnGetAdditionalAccess);
         SubscribeLocalEvent<VenicleComponent, EntRemovedFromContainerMessage>(OnEntRemoved);
         SubscribeLocalEvent<VenicleSeatComponent, InteractHandEvent>(OnSeatInteractHand);
+        SubscribeLocalEvent<VenicleSeatComponent, DragDropTargetEvent>(OnSeatDragDrop);
         SubscribeLocalEvent<VenicleSeatComponent, VenicleEntryEvent>(OnEntry);
         SubscribeLocalEvent<VenicleSeatComponent, DoAfterAttemptEvent<VenicleEntryEvent>>(OnEntryAttempt);
     }
@@ -67,6 +67,8 @@ public sealed partial class VenicleSeatSystem : EntitySystem
             markerComponent.Venicle = uid;
             markerComponent.SeatId = seat.Id;
             markerComponent.MarkerOffset = seat.OccupantOffset - seat.ExitOffset;
+            markerComponent.Available = component.SeatContainers.TryGetValue(seat.Id, out var container) &&
+                                        container.ContainedEntity == null;
             Dirty(marker, markerComponent);
             component.SeatMarkers[seat.Id] = marker;
         }
@@ -112,33 +114,53 @@ public sealed partial class VenicleSeatSystem : EntitySystem
             return;
 
         args.Handled = true;
+        BeginEntry((uid, component), args.User, args.User, true);
+    }
 
-        if (!TryComp(component.Venicle, out VenicleComponent? venicle))
+    private void OnSeatDragDrop(Entity<VenicleSeatComponent> entity, ref DragDropTargetEvent args)
+    {
+        if (args.Handled)
             return;
 
-        if (IsMoving(component.Venicle, venicle))
+        args.Handled = BeginEntry(entity, args.User, args.Dragged, false);
+    }
+
+    private bool BeginEntry(
+        Entity<VenicleSeatComponent> marker,
+        EntityUid actor,
+        EntityUid occupant,
+        bool popupFailures)
+    {
+        if (!TryComp(marker.Comp.Venicle, out VenicleComponent? venicle))
+            return false;
+
+        if (IsMoving(marker.Comp.Venicle, venicle))
         {
-            _popup.PopupEntity(Loc.GetString("venicle-moving"), args.User);
-            return;
+            if (popupFailures)
+                _popup.PopupEntity(Loc.GetString("venicle-moving"), actor, actor);
+            return false;
         }
 
-        if (component.PendingUser != null ||
-            !venicle.SeatContainers.TryGetValue(component.SeatId, out var container) ||
+        if (marker.Comp.PendingOccupant != null ||
+            !venicle.SeatContainers.TryGetValue(marker.Comp.SeatId, out var container) ||
             container.ContainedEntity != null)
         {
-            _popup.PopupEntity(Loc.GetString("venicle-seat-occupied"), args.User);
-            return;
+            if (popupFailures)
+                _popup.PopupEntity(Loc.GetString("venicle-seat-occupied"), actor, actor);
+            return false;
         }
 
-        if (!CanInsert(component.Venicle, component.SeatId, args.User, venicle, component))
+        if (!CanInsert(marker, actor, occupant, venicle))
         {
-            _popup.PopupEntity(Loc.GetString("venicle-no-enter"), args.User);
-            return;
+            if (popupFailures)
+                _popup.PopupEntity(Loc.GetString("venicle-no-enter"), actor, actor);
+            return false;
         }
 
-        component.PendingUser = args.User;
+        marker.Comp.PendingOccupant = occupant;
+        SetSeatAvailable(marker, false);
 
-        var doAfterArgs = new DoAfterArgs(EntityManager, args.User, venicle.EntryDelay, new VenicleEntryEvent(), uid, target: uid)
+        var doAfterArgs = new DoAfterArgs(EntityManager, actor, venicle.EntryDelay, new VenicleEntryEvent(), marker, target: occupant, used: marker)
         {
             BreakOnMove = true,
             BreakOnDamage = true,
@@ -147,34 +169,58 @@ public sealed partial class VenicleSeatSystem : EntitySystem
         };
 
         if (!_doAfter.TryStartDoAfter(doAfterArgs))
-            component.PendingUser = null;
+        {
+            ReleaseReservation(marker, venicle);
+            return false;
+        }
+
+        if (actor != occupant)
+        {
+            _popup.PopupEntity(
+                Loc.GetString("venicle-being-seated"),
+                occupant,
+                occupant,
+                PopupType.MediumCaution);
+        }
+
+        return true;
     }
 
-    private void OnEntry(EntityUid uid, VenicleSeatComponent component, VenicleEntryEvent args)
+    private void OnEntry(Entity<VenicleSeatComponent> marker, ref VenicleEntryEvent args)
     {
         if (args.Handled)
             return;
 
         args.Handled = true;
 
-        if (component.PendingUser == args.User)
-            component.PendingUser = null;
-
-        if (args.Cancelled)
+        if (!TryComp(marker.Comp.Venicle, out VenicleComponent? venicle) ||
+            args.Target is not { } occupant ||
+            marker.Comp.PendingOccupant != occupant)
             return;
 
-        if (!TryComp(component.Venicle, out VenicleComponent? venicle) ||
-            !TryInsert(component.Venicle, component.SeatId, args.User, venicle, component))
+        if (args.Cancelled)
         {
-            _popup.PopupEntity(Loc.GetString("venicle-no-enter"), args.User);
+            ReleaseReservation(marker, venicle);
+            return;
         }
+
+        if (!TryInsert(marker, args.User, occupant, venicle, true))
+        {
+            ReleaseReservation(marker, venicle);
+            _popup.PopupEntity(Loc.GetString("venicle-no-enter"), args.User, args.User);
+            return;
+        }
+
+        marker.Comp.PendingOccupant = null;
+        SetSeatAvailable(marker, false);
     }
 
-    private void OnEntryAttempt(EntityUid uid, VenicleSeatComponent component, DoAfterAttemptEvent<VenicleEntryEvent> args)
+    private void OnEntryAttempt(Entity<VenicleSeatComponent> marker, ref DoAfterAttemptEvent<VenicleEntryEvent> args)
     {
-        if (!TryComp(component.Venicle, out VenicleComponent? venicle) ||
-            component.PendingUser != args.DoAfter.Args.User ||
-            !CanInsert(component.Venicle, component.SeatId, args.DoAfter.Args.User, venicle, component))
+        if (!TryComp(marker.Comp.Venicle, out VenicleComponent? venicle) ||
+            args.DoAfter.Args.Target is not { } occupant ||
+            marker.Comp.PendingOccupant != occupant ||
+            !CanInsert(marker, args.DoAfter.Args.User, occupant, venicle, true))
         {
             args.Cancel();
         }
@@ -225,45 +271,48 @@ public sealed partial class VenicleSeatSystem : EntitySystem
 
         PlaceAtExit(uid, args.Entity, occupant.SeatId, component);
         CleanupOccupant(uid, args.Entity);
+
+        if (component.SeatMarkers.TryGetValue(occupant.SeatId, out var marker) &&
+            TryComp(marker, out VenicleSeatComponent? seat))
+        {
+            seat.PendingOccupant = null;
+            SetSeatAvailable((marker, seat), true);
+        }
     }
 
     public bool CanInsert(
-        EntityUid uid,
-        string seatId,
-        EntityUid toInsert,
+        Entity<VenicleSeatComponent> marker,
+        EntityUid actor,
+        EntityUid occupant,
         VenicleComponent? component = null,
-        VenicleSeatComponent? seatComponent = null)
+        bool allowReservation = false)
     {
-        if (!Resolve(uid, ref component) ||
-            !component.SeatContainers.TryGetValue(seatId, out var container))
+        if (!Resolve(marker.Comp.Venicle, ref component) ||
+            !component.SeatContainers.TryGetValue(marker.Comp.SeatId, out var container))
             return false;
 
-        return container.ContainedEntity == null
-               && (seatComponent?.PendingUser == null || seatComponent.PendingUser == toInsert)
-               && !HasComp<VenicleOccupantComponent>(toInsert)
-               && _actionBlocker.CanMove(toInsert)
-               && !_whitelist.IsWhitelistFail(component.OccupantWhitelist, toInsert)
-               && !IsMoving(uid, component);
+        return container.ContainedEntity == null &&
+               CanUseSeat(marker, actor, occupant, allowReservation);
     }
 
     public bool TryInsert(
-        EntityUid uid,
-        string seatId,
-        EntityUid? toInsert,
+        Entity<VenicleSeatComponent> marker,
+        EntityUid actor,
+        EntityUid occupant,
         VenicleComponent? component = null,
-        VenicleSeatComponent? seatComponent = null)
+        bool allowReservation = false)
     {
-        if (!Resolve(uid, ref component) || toInsert == null)
+        if (!Resolve(marker.Comp.Venicle, ref component))
             return false;
 
-        if (!CanInsert(uid, seatId, toInsert.Value, component, seatComponent) ||
-            !component.SeatContainers.TryGetValue(seatId, out var container))
+        if (!CanInsert(marker, actor, occupant, component, allowReservation) ||
+            !component.SeatContainers.TryGetValue(marker.Comp.SeatId, out var container))
             return false;
 
-        if (!_container.Insert(toInsert.Value, container))
+        if (!_container.Insert(occupant, container))
             return false;
 
-        SetupOccupant(uid, toInsert.Value, seatId, component);
+        SetupOccupant(marker.Comp.Venicle, occupant, marker.Comp.SeatId, component);
         return true;
     }
 
@@ -320,15 +369,21 @@ public sealed partial class VenicleSeatSystem : EntitySystem
                && (force || !IsMoving(venicleUid, component));
     }
 
-    private bool IsMoving(EntityUid uid, VenicleComponent component)
+    private void ReleaseReservation(Entity<VenicleSeatComponent> marker, VenicleComponent component)
     {
-        if (!TryComp(uid, out PhysicsComponent? physics))
-            return false;
+        marker.Comp.PendingOccupant = null;
+        var available = component.SeatContainers.TryGetValue(marker.Comp.SeatId, out var container) &&
+                        container.ContainedEntity == null;
+        SetSeatAvailable(marker, available);
+    }
 
-        var maxSpeed = MathF.Max(0f, component.MaxSeatInteractionSpeed);
-        var maxAngularSpeed = MathF.Max(0f, component.MaxSeatInteractionAngularSpeed);
-        return physics.LinearVelocity.LengthSquared() > maxSpeed * maxSpeed
-               || MathF.Abs(physics.AngularVelocity) > maxAngularSpeed;
+    private void SetSeatAvailable(Entity<VenicleSeatComponent> marker, bool available)
+    {
+        if (marker.Comp.Available == available)
+            return;
+
+        marker.Comp.Available = available;
+        Dirty(marker);
     }
 
     private void PlaceAtExit(EntityUid venicleUid, EntityUid occupantUid, string seatId, VenicleComponent component)
@@ -339,10 +394,13 @@ public sealed partial class VenicleSeatSystem : EntitySystem
 
     private EntityCoordinates? GetExitCoordinates(EntityUid venicleUid, string seatId, VenicleComponent component)
     {
-        if (!TryGetSeat(component, seatId, out var seat))
+        if (Terminating(venicleUid) || !TryGetSeat(component, seatId, out var seat))
             return null;
 
         var venicleTransform = Transform(venicleUid);
+        if (venicleTransform.MapID == MapId.Nullspace || !Exists(venicleTransform.ParentUid))
+            return null;
+
         var mapCoordinates = _transform.ToMapCoordinates(new EntityCoordinates(venicleUid, seat.ExitOffset));
         return _transform.ToCoordinates(venicleTransform.ParentUid, mapCoordinates);
     }
