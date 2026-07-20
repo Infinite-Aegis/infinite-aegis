@@ -6,7 +6,11 @@ using Robust.Shared.Prototypes;
 
 namespace Content.Shared.Venicle.Components;
 
-[RegisterComponent, NetworkedComponent, AutoGenerateComponentState(fieldDeltas: true)]
+/// <summary>
+/// Seat definitions, passenger interaction configuration, and server-side seat runtime state.
+/// Vehicle physics belongs to <see cref="VenicleMovementComponent"/>.
+/// </summary>
+[RegisterComponent, NetworkedComponent]
 public sealed partial class VenicleComponent : Component
 {
     [DataField]
@@ -34,64 +38,22 @@ public sealed partial class VenicleComponent : Component
     public EntProtoId EjectAction = "ActionVenicleEject";
 
     [DataField]
+    public EntProtoId ChangeSeatAction = "ActionVenicleChangeSeat";
+
+    [DataField]
+    public float ChangeSeatDelay = 3f;
+
+    [DataField]
+    public float KickDelay = 10f;
+
+    [DataField]
     public float MaxSeatInteractionSpeed = 0.15f;
 
     [DataField]
     public float MaxSeatInteractionAngularSpeed = 0.1f;
 
-    [DataField]
-    public float MaxForwardSpeed = 8f;
-
-    [DataField]
-    public float MaxReverseSpeed = 3f;
-
-    [DataField]
-    public float ForwardEngineForce = 6000f;
-
-    [DataField]
-    public float ReverseEngineForce = 3500f;
-
-    [DataField]
-    public float BrakeForce = 14000f;
-
-    [DataField]
-    public float RollingResistance = 250f;
-
-    [DataField]
-    public float AerodynamicDrag = 12f;
-
-    [DataField]
-    public float FrontCorneringStiffness = 12000f;
-
-    [DataField]
-    public float RearCorneringStiffness = 11000f;
-
-    [DataField]
-    public float MaxLateralGrip = 14000f;
-
-    [DataField]
-    public Angle MaxSteeringAngle = Angle.FromDegrees(35);
-
-    [DataField]
-    public float SteeringRate = 4f;
-
-    [DataField]
-    public float SteeringReturnRate = 4f;
-
-    [DataField]
-    public float WheelBase = 2.2f;
-
-    [DataField]
-    public float AngularResistance = 1500f;
-
-    [DataField]
-    public float SteeringAngularResistanceModifier = 0.25f;
-
-    [DataField]
-    public float TileFrictionModifier = 0.05f;
-
-    [ViewVariables, AutoNetworkedField]
-    public float CurrentSteering;
+    [ViewVariables]
+    public HashSet<EntityUid> OccupantsChangingSeats = new();
 }
 
 [DataDefinition]

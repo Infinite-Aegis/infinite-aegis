@@ -71,6 +71,10 @@
     - id: rear-right-passenger
       occupantOffset: 0.28,0.45
       exitOffset: 1.10,0.45
+    occupantWhitelist:
+      components:
+      - HumanoidProfile
+  - type: VenicleMovement
     maxForwardSpeed: 8
     maxReverseSpeed: 3
     forwardEngineForce: 6000
@@ -88,6 +92,7 @@
     angularResistance: 1500
     steeringAngularResistanceModifier: 0.25
     tileFrictionModifier: 0.05
-    occupantWhitelist:
-      components:
-      - HumanoidProfile
+  - type: UserInterface
+    interfaces:
+      enum.VenicleUiKey.Seats:
+        type: VenicleBoundUserInterface

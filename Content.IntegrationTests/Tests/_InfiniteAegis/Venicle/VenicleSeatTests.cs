@@ -7,7 +7,9 @@ using Content.Server.Venicle;
 using Content.Shared.Buckle.Components;
 using Content.Shared.DragDrop;
 using Content.Shared.Interaction;
+using Content.Shared.Movement.Components;
 using Content.Shared.Physics;
+using Content.Shared.Venicle;
 using Content.Shared.Venicle.Components;
 using Robust.Client.GameObjects;
 using Robust.Shared.Containers;
@@ -183,5 +185,164 @@ public sealed class VenicleSeatTests : GameTest
             var sprite = CEntMan.GetComponent<SpriteComponent>(clientMarker);
             Assert.That(sprite.Visible, Is.False);
         });
+    }
+
+    [Test]
+    public async Task ChangingSeatUpdatesOffsetExitAndDriverControl()
+    {
+        var map = await Pair.CreateTestMap();
+        var seatSystem = SEntMan.System<VenicleSeatSystem>();
+        var transform = SEntMan.System<SharedTransformSystem>();
+
+        EntityUid occupant = default;
+        EntityUid venicle = default;
+        VenicleComponent venicleComponent = null!;
+
+        await Server.WaitAssertion(() =>
+        {
+            occupant = SEntMan.SpawnEntity("MobHuman", map.MapCoords);
+            venicle = SEntMan.SpawnEntity("Moskvich", map.MapCoords);
+            venicleComponent = SEntMan.GetComponent<VenicleComponent>(venicle);
+            venicleComponent.ChangeSeatDelay = 0.1f;
+
+            var marker = venicleComponent.SeatMarkers["front-passenger"];
+            var markerComponent = SEntMan.GetComponent<VenicleSeatComponent>(marker);
+            transform.SetWorldPosition(occupant, transform.GetWorldPosition(marker) + new Vector2(0.3f, 0f));
+            Assert.That(seatSystem.TryInsert((marker, markerComponent), occupant, occupant), Is.True);
+            Assert.That(SEntMan.HasComponent<RelayInputMoverComponent>(occupant), Is.False);
+
+            var message = new VenicleChangeSeatMessage("driver")
+            {
+                Actor = occupant,
+                UiKey = VenicleUiKey.Seats,
+            };
+            SEntMan.EventBus.RaiseLocalEvent(venicle, message);
+        });
+
+        await PoolManager.WaitUntil(Server,
+            () => SEntMan.GetComponent<VenicleOccupantComponent>(occupant).SeatId == "driver",
+            maxTicks: 60);
+
+        await Server.WaitAssertion(() =>
+        {
+            var occupantComponent = SEntMan.GetComponent<VenicleOccupantComponent>(occupant);
+            var relay = SEntMan.GetComponent<RelayInputMoverComponent>(occupant);
+            Assert.Multiple(() =>
+            {
+                Assert.That(venicleComponent.SeatContainers["front-passenger"].ContainedEntity, Is.Null);
+                Assert.That(venicleComponent.SeatContainers["driver"].ContainedEntity, Is.EqualTo(occupant));
+                Assert.That(occupantComponent.SeatId, Is.EqualTo("driver"));
+                Assert.That(relay.RelayEntity, Is.EqualTo(venicle));
+                AssertVector(SEntMan.GetComponent<TransformComponent>(occupant).LocalPosition,
+                    new Vector2(-0.28f, -0.45f));
+            });
+
+            var message = new VenicleChangeSeatMessage("rear-right-passenger")
+            {
+                Actor = occupant,
+                UiKey = VenicleUiKey.Seats,
+            };
+            SEntMan.EventBus.RaiseLocalEvent(venicle, message);
+        });
+
+        await PoolManager.WaitUntil(Server,
+            () => SEntMan.GetComponent<VenicleOccupantComponent>(occupant).SeatId == "rear-right-passenger",
+            maxTicks: 60);
+
+        await Server.WaitAssertion(() =>
+        {
+            Assert.That(SEntMan.HasComponent<RelayInputMoverComponent>(occupant), Is.False);
+            AssertVector(SEntMan.GetComponent<TransformComponent>(occupant).LocalPosition,
+                new Vector2(0.28f, 0.45f));
+            Assert.That(seatSystem.TryEject(occupant), Is.True);
+            AssertVector(transform.GetWorldPosition(occupant),
+                transform.GetWorldPosition(venicle) + new Vector2(1.10f, 0.45f));
+        });
+    }
+
+    [Test]
+    public async Task KickFindsCurrentSeatAndCannotStartWhileMoving()
+    {
+        var map = await Pair.CreateTestMap();
+        var seatSystem = SEntMan.System<VenicleSeatSystem>();
+        var transform = SEntMan.System<SharedTransformSystem>();
+        var physics = SEntMan.System<Robust.Shared.Physics.Systems.SharedPhysicsSystem>();
+
+        EntityUid actor = default;
+        EntityUid target = default;
+        EntityUid venicle = default;
+        VenicleComponent venicleComponent = null!;
+
+        await Server.WaitAssertion(() =>
+        {
+            actor = SEntMan.SpawnEntity("MobHuman", map.MapCoords);
+            target = SEntMan.SpawnEntity("MobHuman", map.MapCoords);
+            venicle = SEntMan.SpawnEntity("Moskvich", map.MapCoords);
+            venicleComponent = SEntMan.GetComponent<VenicleComponent>(venicle);
+            venicleComponent.ChangeSeatDelay = 0.05f;
+            venicleComponent.KickDelay = 0.25f;
+
+            foreach (var (person, seatId) in new[]
+                     {
+                         (actor, "driver"),
+                         (target, "rear-left-passenger"),
+                     })
+            {
+                var marker = venicleComponent.SeatMarkers[seatId];
+                var markerComponent = SEntMan.GetComponent<VenicleSeatComponent>(marker);
+                transform.SetWorldPosition(person, transform.GetWorldPosition(marker) + new Vector2(-0.3f, 0f));
+                Assert.That(seatSystem.TryInsert((marker, markerComponent), person, person), Is.True);
+            }
+
+            var message = new VenicleKickOccupantMessage(SEntMan.GetNetEntity(target))
+            {
+                Actor = actor,
+                UiKey = VenicleUiKey.Seats,
+            };
+            SEntMan.EventBus.RaiseLocalEvent(venicle, message);
+
+            var changeSeat = new VenicleChangeSeatMessage("rear-right-passenger")
+            {
+                Actor = target,
+                UiKey = VenicleUiKey.Seats,
+            };
+            SEntMan.EventBus.RaiseLocalEvent(venicle, changeSeat);
+        });
+
+        await PoolManager.WaitUntil(Server,
+            () => SEntMan.GetComponent<VenicleOccupantComponent>(target).SeatId == "rear-right-passenger",
+            maxTicks: 60);
+        await PoolManager.WaitUntil(Server,
+            () => !SEntMan.HasComponent<VenicleOccupantComponent>(target),
+            maxTicks: 60);
+
+        await Server.WaitAssertion(() =>
+        {
+            AssertVector(transform.GetWorldPosition(target),
+                transform.GetWorldPosition(venicle) + new Vector2(1.10f, 0.45f));
+
+            var marker = venicleComponent.SeatMarkers["rear-left-passenger"];
+            var markerComponent = SEntMan.GetComponent<VenicleSeatComponent>(marker);
+            transform.SetWorldPosition(target, transform.GetWorldPosition(marker) + new Vector2(-0.3f, 0f));
+            Assert.That(seatSystem.TryInsert((marker, markerComponent), target, target), Is.True);
+
+            var body = SEntMan.GetComponent<PhysicsComponent>(venicle);
+            physics.SetLinearVelocity(venicle, new Vector2(1f, 0f), body: body);
+            var message = new VenicleKickOccupantMessage(SEntMan.GetNetEntity(target))
+            {
+                Actor = actor,
+                UiKey = VenicleUiKey.Seats,
+            };
+            SEntMan.EventBus.RaiseLocalEvent(venicle, message);
+        });
+
+        await Pair.RunTicksSync(20);
+        await Server.WaitAssertion(() =>
+            Assert.That(SEntMan.HasComponent<VenicleOccupantComponent>(target), Is.True));
+    }
+
+    private static void AssertVector(Vector2 actual, Vector2 expected)
+    {
+        Assert.That(Vector2.Distance(actual, expected), Is.LessThan(0.001f));
     }
 }

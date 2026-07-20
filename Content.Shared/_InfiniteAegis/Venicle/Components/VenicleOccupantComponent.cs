@@ -13,4 +13,7 @@ public sealed partial class VenicleOccupantComponent : Component
 
     [DataField]
     public EntityUid? EjectActionEntity;
+
+    [DataField]
+    public EntityUid? ChangeSeatActionEntity;
 }

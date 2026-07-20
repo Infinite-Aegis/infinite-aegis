@@ -26,22 +26,22 @@ public sealed partial class VenicleMovementSystem : VirtualController
         UpdatesAfter.Add(typeof(SharedMoverController));
         UpdatesBefore.Add(typeof(TileFrictionController));
 
-        SubscribeLocalEvent<VenicleComponent, ComponentStartup>(OnStartup);
-        SubscribeLocalEvent<VenicleComponent, UpdateCanMoveEvent>(OnUpdateCanMove);
-        SubscribeLocalEvent<VenicleComponent, TileFrictionEvent>(OnTileFriction);
+        SubscribeLocalEvent<VenicleMovementComponent, ComponentStartup>(OnStartup);
+        SubscribeLocalEvent<VenicleMovementComponent, UpdateCanMoveEvent>(OnUpdateCanMove);
+        SubscribeLocalEvent<VenicleMovementComponent, TileFrictionEvent>(OnTileFriction);
     }
 
-    private void OnStartup(Entity<VenicleComponent> ent, ref ComponentStartup args)
+    private void OnStartup(Entity<VenicleMovementComponent> ent, ref ComponentStartup args)
     {
         _actionBlocker.UpdateCanMove(ent.Owner);
     }
 
-    private void OnUpdateCanMove(Entity<VenicleComponent> ent, ref UpdateCanMoveEvent args)
+    private void OnUpdateCanMove(Entity<VenicleMovementComponent> ent, ref UpdateCanMoveEvent args)
     {
         args.Cancel();
     }
 
-    private void OnTileFriction(Entity<VenicleComponent> ent, ref TileFrictionEvent args)
+    private void OnTileFriction(Entity<VenicleMovementComponent> ent, ref TileFrictionEvent args)
     {
         args.Modifier *= ent.Comp.TileFrictionModifier;
     }
@@ -53,7 +53,7 @@ public sealed partial class VenicleMovementSystem : VirtualController
         if (frameTime <= 0f)
             return;
 
-        var query = EntityQueryEnumerator<VenicleComponent, InputMoverComponent, PhysicsComponent, TransformComponent>();
+        var query = EntityQueryEnumerator<VenicleMovementComponent, InputMoverComponent, PhysicsComponent, TransformComponent>();
         while (query.MoveNext(out var uid, out var venicle, out var mover, out var physics, out var xform))
         {
             if (prediction && !physics.Predict ||
@@ -67,7 +67,7 @@ public sealed partial class VenicleMovementSystem : VirtualController
         }
     }
 
-    private void Move(Entity<VenicleComponent, InputMoverComponent, PhysicsComponent, TransformComponent> ent, float frameTime)
+    private void Move(Entity<VenicleMovementComponent, InputMoverComponent, PhysicsComponent, TransformComponent> ent, float frameTime)
     {
         var (uid, venicle, mover, physics, xform) = ent;
         var buttons = SharedMoverController.GetNormalizedMovement(mover.HeldMoveButtons);
@@ -113,7 +113,7 @@ public sealed partial class VenicleMovementSystem : VirtualController
         return input;
     }
 
-    private void UpdateSteering(EntityUid uid, VenicleComponent venicle, float input, float frameTime)
+    private void UpdateSteering(EntityUid uid, VenicleMovementComponent venicle, float input, float frameTime)
     {
         var oldSteering = venicle.CurrentSteering;
         var rate = input == 0f ? venicle.SteeringReturnRate : venicle.SteeringRate;
@@ -127,7 +127,7 @@ public sealed partial class VenicleMovementSystem : VirtualController
     private void ApplyDrive(
         EntityUid uid,
         PhysicsComponent physics,
-        VenicleComponent venicle,
+        VenicleMovementComponent venicle,
         Vector2 forward,
         float forwardSpeed,
         float input,
@@ -168,7 +168,7 @@ public sealed partial class VenicleMovementSystem : VirtualController
     private void ApplyResistance(
         EntityUid uid,
         PhysicsComponent physics,
-        VenicleComponent venicle,
+        VenicleMovementComponent venicle,
         float frameTime)
     {
         var velocity = physics.LinearVelocity;
@@ -185,7 +185,7 @@ public sealed partial class VenicleMovementSystem : VirtualController
     private void ApplyAxleGrip(
         EntityUid uid,
         PhysicsComponent physics,
-        VenicleComponent venicle,
+        VenicleMovementComponent venicle,
         Angle rotation,
         Vector2 rearRight,
         float frameTime)
@@ -243,7 +243,7 @@ public sealed partial class VenicleMovementSystem : VirtualController
     private void ApplyAngularResistance(
         EntityUid uid,
         PhysicsComponent physics,
-        VenicleComponent venicle,
+        VenicleMovementComponent venicle,
         float frameTime)
     {
         if (MathF.Abs(physics.AngularVelocity) < 0.0001f || physics.InvI <= 0f)
