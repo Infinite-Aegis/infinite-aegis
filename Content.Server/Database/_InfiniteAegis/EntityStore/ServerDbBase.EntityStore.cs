@@ -46,6 +46,47 @@ public abstract partial class ServerDbBase
             .ToListAsync();
     }
 
+    public async Task<List<EntityStorePersistentEntitySummary>> GetPersistentCharacterEntitySummariesAsync(
+        NetUserId userId,
+        int characterSlot)
+    {
+        await using var db = await GetDb();
+
+        return await db.DbContext.PersistentCharacterEntity
+            .Where(x => x.Profile.Preference.UserId == userId.UserId && x.Profile.Slot == characterSlot)
+            .OrderBy(x => x.UpdatedAt)
+            .Select(x => new EntityStorePersistentEntitySummary(
+                x.Id,
+                x.OfferId,
+                x.PrototypeId))
+            .ToListAsync();
+    }
+
+    public async Task<EntityStorePersistentEntityData?> GetPersistentCharacterEntityAsync(
+        NetUserId userId,
+        int characterSlot,
+        Guid persistentEntityId)
+    {
+        if (persistentEntityId == Guid.Empty)
+            return null;
+
+        await using var db = await GetDb();
+
+        return await db.DbContext.PersistentCharacterEntity
+            .Where(x => x.Id == persistentEntityId &&
+                        x.Profile.Preference.UserId == userId.UserId &&
+                        x.Profile.Slot == characterSlot)
+            .Select(x => new EntityStorePersistentEntityData(
+                x.Id,
+                x.ProfileId,
+                x.OfferId,
+                x.PrototypeId,
+                x.PurchaseRequestId,
+                x.EntityState,
+                x.Revision))
+            .SingleOrDefaultAsync();
+    }
+
     public async Task<EntityStorePurchaseResult> PurchasePersistentEntityAsync(
         NetUserId userId,
         int characterSlot,
@@ -84,6 +125,12 @@ public abstract partial class ServerDbBase
 
             if (duplicate)
                 return new EntityStorePurchaseResult(EntityStorePurchaseStatus.DuplicateRequest, profileId);
+
+            var persistentIdExists = await db.DbContext.PersistentCharacterEntity.AnyAsync(x =>
+                x.Id == persistentEntityId);
+
+            if (persistentIdExists)
+                return new EntityStorePurchaseResult(EntityStorePurchaseStatus.DuplicatePersistentId, profileId);
 
             if (price > 0)
                 return new EntityStorePurchaseResult(EntityStorePurchaseStatus.InsufficientFunds, profileId);

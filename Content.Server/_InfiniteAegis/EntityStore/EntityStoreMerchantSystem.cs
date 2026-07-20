@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Content.Server.Database;
+using Content.Server.Garage;
 using Content.Server.Popups;
 using Content.Server.Preferences.Managers;
 using Content.Shared.EntityStore;
@@ -30,6 +31,7 @@ public sealed partial class EntityStoreMerchantSystem : EntitySystem
     [Dependency] private MobStateSystem _mobState = default!;
     [Dependency] private PopupSystem _popup = default!;
     [Dependency] private PersistentCharacterEntitySystem _persistence = default!;
+    [Dependency] private GarageSystem _garage = default!;
 
     private readonly HashSet<NetUserId> _purchasesInFlight = new();
 
@@ -132,6 +134,11 @@ public sealed partial class EntityStoreMerchantSystem : EntitySystem
 
             if (result.Status == EntityStorePurchaseStatus.Success)
             {
+                _garage.NotifyStoreWrite(
+                    actor,
+                    session.UserId,
+                    slot,
+                    result.ProfileId ?? characterState.ProfileId);
                 _popup.PopupEntity(Loc.GetString("entity-store-purchase-success"), actor, actor);
             }
             else

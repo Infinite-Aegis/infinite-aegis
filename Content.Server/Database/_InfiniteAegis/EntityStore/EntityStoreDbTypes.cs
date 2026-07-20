@@ -7,6 +7,7 @@ public enum EntityStorePurchaseStatus : byte
     Success,
     CharacterNotFound,
     DuplicateRequest,
+    DuplicatePersistentId,
     InsufficientFunds,
     InvalidRequest,
     Failed,
@@ -22,6 +23,11 @@ public sealed record EntityStorePersistentEntityData(
     Guid PurchaseRequestId,
     string EntityState,
     long Revision);
+
+public sealed record EntityStorePersistentEntitySummary(
+    Guid Id,
+    string OfferId,
+    string PrototypeId);
 
 public sealed record EntityStorePurchaseResult(
     EntityStorePurchaseStatus Status,

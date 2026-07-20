@@ -20,7 +20,7 @@ public sealed partial class PersistentCharacterEntityComponent : Component
     public EntityUid? CharacterOwner;
 
     /// <summary>
-    /// Prevents the transient purchase snapshot from being written back by its own deletion event.
+    /// Prevents transient entity graphs from being written back when they are queued for deletion or a round ends.
     /// </summary>
     [ViewVariables]
     public bool SuppressSave;

@@ -13,6 +13,15 @@ public partial interface IServerDbManager
         NetUserId userId,
         int characterSlot);
 
+    Task<List<EntityStorePersistentEntitySummary>> GetPersistentCharacterEntitySummariesAsync(
+        NetUserId userId,
+        int characterSlot);
+
+    Task<EntityStorePersistentEntityData?> GetPersistentCharacterEntityAsync(
+        NetUserId userId,
+        int characterSlot,
+        Guid persistentEntityId);
+
     Task<EntityStorePurchaseResult> PurchasePersistentEntityAsync(
         NetUserId userId,
         int characterSlot,

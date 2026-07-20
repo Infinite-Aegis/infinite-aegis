@@ -1,0 +1,23 @@
+- type: entity
+  parent: BaseAction
+  id: ActionOpenGarage
+  name: garage-action-name
+  description: garage-action-description
+  components:
+  - type: Action
+    itemIconStyle: NoItem
+    icon:
+      sprite: _InfiniteAegis/Objects/Vehicles/moskvich.rsi
+      state: m1
+  - type: InstantAction
+    event: !type:OpenGarageEvent
+
+- type: entity
+  parent: MarkerBase
+  id: ParkingLotSpawnPoint
+  name: parking lot spawn point
+  suffix: Infinite Aegis
+  components:
+  - type: ParkingLot
+  - type: Sprite
+    state: blue

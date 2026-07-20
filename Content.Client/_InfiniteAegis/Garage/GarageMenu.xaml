@@ -1,0 +1,13 @@
+<DefaultWindow
+    xmlns="https://spacestation14.io"
+    Title="{Loc 'garage-title'}"
+    MinSize="520 360"
+    SetSize="680 520">
+    <BoxContainer Orientation="Vertical" Margin="8">
+        <Label Text="{Loc 'garage-description'}" Margin="0 0 0 8" />
+        <PanelContainer StyleClasses="HighDivider" Margin="0 0 0 6" />
+        <ScrollContainer HScrollEnabled="False" VerticalExpand="True">
+            <BoxContainer Name="VehiclesContainer" Orientation="Vertical" HorizontalExpand="True" />
+        </ScrollContainer>
+    </BoxContainer>
+</DefaultWindow>
