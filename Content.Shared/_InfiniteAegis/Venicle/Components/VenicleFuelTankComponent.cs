@@ -5,7 +5,7 @@ using Robust.Shared.Prototypes;
 
 namespace Content.Shared.Venicle.Components;
 
-[RegisterComponent, NetworkedComponent]
+[RegisterComponent, NetworkedComponent, AutoGenerateComponentState(fieldDeltas: true)]
 public sealed partial class VenicleFuelTankComponent : Component
 {
     [DataField]
@@ -22,6 +22,18 @@ public sealed partial class VenicleFuelTankComponent : Component
 
     [DataField]
     public Vector2 MarkerOffset;
+
+    [DataField]
+    public float FuelConsumptionPerDistance;
+
+    [DataField]
+    public float MaximumTrackedSegmentLength = 2f;
+
+    [ViewVariables, AutoNetworkedField]
+    public bool HasFuel;
+
+    [ViewVariables]
+    public float PendingFuelConsumption;
 
     [ViewVariables]
     public EntityUid? PortMarker;

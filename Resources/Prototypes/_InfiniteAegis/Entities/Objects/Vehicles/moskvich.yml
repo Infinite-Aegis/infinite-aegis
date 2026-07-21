@@ -104,6 +104,7 @@
   - type: VenicleFuelTank
     portOffset: 1.10,0.90
     markerOffset: -0.55,0
+    fuelConsumptionPerDistance: 0.003
   - type: SolutionManager
     solutions:
     - VenicleFuelSolution

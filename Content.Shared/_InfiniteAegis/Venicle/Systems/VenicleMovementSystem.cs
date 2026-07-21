@@ -110,8 +110,9 @@ public sealed partial class VenicleMovementSystem : VirtualController
         var right = rotation.RotateVec(Vector2.UnitX);
         var forward = rotation.RotateVec(-Vector2.UnitY);
         var forwardSpeed = Vector2.Dot(physics.LinearVelocity, forward);
+        var hasEnginePower = !TryComp<VenicleFuelTankComponent>(uid, out var fuelTank) || fuelTank.HasFuel;
 
-        ApplyDrive(uid, physics, venicle, forward, forwardSpeed, throttleInput, frameTime);
+        ApplyDrive(uid, physics, venicle, forward, forwardSpeed, throttleInput, hasEnginePower, frameTime);
         ApplyResistance(uid, physics, venicle, frameTime);
         ApplyAxleGrip(uid, physics, venicle, rotation, right, frameTime);
         ApplyAngularResistance(uid, physics, venicle, frameTime);
@@ -161,6 +162,7 @@ public sealed partial class VenicleMovementSystem : VirtualController
         Vector2 forward,
         float forwardSpeed,
         float input,
+        bool hasEnginePower,
         float frameTime)
     {
         if (input > 0f)
@@ -170,6 +172,9 @@ public sealed partial class VenicleMovementSystem : VirtualController
                 ApplyLongitudinalBrake(uid, physics, forward, forwardSpeed, venicle.BrakeForce, frameTime);
                 return;
             }
+
+            if (!hasEnginePower)
+                return;
 
             var force = GetLimitedEngineForce(
                 forwardSpeed,
@@ -186,6 +191,9 @@ public sealed partial class VenicleMovementSystem : VirtualController
                 ApplyLongitudinalBrake(uid, physics, forward, forwardSpeed, venicle.BrakeForce, frameTime);
                 return;
             }
+
+            if (!hasEnginePower)
+                return;
 
             var force = GetLimitedEngineForce(
                 -forwardSpeed,
