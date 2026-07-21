@@ -111,8 +111,27 @@ public sealed partial class VenicleMovementSystem : VirtualController
         var forward = rotation.RotateVec(-Vector2.UnitY);
         var forwardSpeed = Vector2.Dot(physics.LinearVelocity, forward);
         var hasEnginePower = !TryComp<VenicleFuelTankComponent>(uid, out var fuelTank) || fuelTank.HasFuel;
+        var accelerationModifier = 1f;
+        var maximumSpeedModifier = 1f;
 
-        ApplyDrive(uid, physics, venicle, forward, forwardSpeed, throttleInput, hasEnginePower, frameTime);
+        if (TryComp<VenicleDamageComponent>(uid, out var damage))
+        {
+            hasEnginePower &= damage.CanDrive;
+            accelerationModifier = damage.AccelerationModifier;
+            maximumSpeedModifier = damage.MaximumSpeedModifier;
+        }
+
+        ApplyDrive(
+            uid,
+            physics,
+            venicle,
+            forward,
+            forwardSpeed,
+            throttleInput,
+            hasEnginePower,
+            accelerationModifier,
+            maximumSpeedModifier,
+            frameTime);
         ApplyResistance(uid, physics, venicle, frameTime);
         ApplyAxleGrip(uid, physics, venicle, rotation, right, frameTime);
         ApplyAngularResistance(uid, physics, venicle, frameTime);
@@ -163,6 +182,8 @@ public sealed partial class VenicleMovementSystem : VirtualController
         float forwardSpeed,
         float input,
         bool hasEnginePower,
+        float accelerationModifier,
+        float maximumSpeedModifier,
         float frameTime)
     {
         if (input > 0f)
@@ -178,8 +199,8 @@ public sealed partial class VenicleMovementSystem : VirtualController
 
             var force = GetLimitedEngineForce(
                 forwardSpeed,
-                MathF.Max(0f, venicle.MaxForwardSpeed),
-                MathF.Max(0f, venicle.ForwardEngineForce));
+                MathF.Max(0f, venicle.MaxForwardSpeed * maximumSpeedModifier),
+                MathF.Max(0f, venicle.ForwardEngineForce * accelerationModifier));
             _physics.ApplyForce(uid, forward * force * input, body: physics);
             return;
         }
@@ -197,8 +218,8 @@ public sealed partial class VenicleMovementSystem : VirtualController
 
             var force = GetLimitedEngineForce(
                 -forwardSpeed,
-                MathF.Max(0f, venicle.MaxReverseSpeed),
-                MathF.Max(0f, venicle.ReverseEngineForce));
+                MathF.Max(0f, venicle.MaxReverseSpeed * maximumSpeedModifier),
+                MathF.Max(0f, venicle.ReverseEngineForce * accelerationModifier));
             _physics.ApplyForce(uid, -forward * force * -input, body: physics);
         }
     }

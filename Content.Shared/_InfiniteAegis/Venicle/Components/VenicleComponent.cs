@@ -6,10 +6,6 @@ using Robust.Shared.Prototypes;
 
 namespace Content.Shared.Venicle.Components;
 
-/// <summary>
-/// Seat definitions, passenger interaction configuration, and server-side seat runtime state.
-/// Vehicle physics belongs to <see cref="VenicleMovementComponent"/>.
-/// </summary>
 [RegisterComponent, NetworkedComponent]
 public sealed partial class VenicleComponent : Component
 {

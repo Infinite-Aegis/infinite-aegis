@@ -1,0 +1,13 @@
+- type: entity
+  parent: FlaskBase
+  id: GasolineCanister
+  name: gasoline canister
+  description: A sealable canister filled with gasoline.
+  suffix: Full
+  components:
+  - type: Solution
+    solution:
+      maxVol: 100
+      reagents:
+      - ReagentId: Gasoline
+        Quantity: 100
