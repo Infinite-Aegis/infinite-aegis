@@ -1,0 +1,5 @@
+- type: carDealerStoreOffer
+  id: CarDealerStoreOfferMoskvich
+  product: Moskvich
+  description: car-dealer-store-offer-moskvich-description
+  price: 0

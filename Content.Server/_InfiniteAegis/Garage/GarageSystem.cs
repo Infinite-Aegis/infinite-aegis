@@ -1,9 +1,9 @@
 using Content.Server.Chat.Managers;
 using Content.Server.Database;
-using Content.Server.EntityStore;
+using Content.Server.CarDealerStore;
 using Content.Server.Preferences.Managers;
 using Content.Shared.Actions;
-using Content.Shared.EntityStore;
+using Content.Shared.CarDealerStore;
 using Content.Shared.GameTicking;
 using Content.Shared.Garage;
 using Content.Shared.Mobs.Systems;

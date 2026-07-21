@@ -17,7 +17,7 @@ public sealed partial class GarageSystem
         int slot,
         int? expectedProfileId = null)
     {
-        var character = await _database.GetEntityStoreCharacterStateAsync(userId, slot);
+        var character = await _database.GetCarDealerStoreCharacterStateAsync(userId, slot);
         var vehicles = character == null
             ? []
             : await _database.GetPersistentCharacterEntitySummariesAsync(userId, slot);

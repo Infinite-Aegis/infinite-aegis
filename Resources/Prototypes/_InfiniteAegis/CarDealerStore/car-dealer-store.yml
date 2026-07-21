@@ -1,5 +1,5 @@
 - type: entity
-  id: EntityStoreAutoDealer
+  id: CarDealerStore
   parent: BaseComputer
   name: auto dealer terminal
   description: A terminal for purchasing vehicles tied to your character.
@@ -16,15 +16,15 @@
       state: generic_keys
     - map: ["enum.WiresVisualLayers.MaintenancePanel"]
       state: generic_panel_open
-  - type: EntityStoreMerchant
+  - type: CarDealerStore
     offers:
-    - EntityStoreOfferMoskvich
+    - CarDealerStoreOfferMoskvich
   - type: ActivatableUI
     singleUser: true
-    key: enum.EntityStoreUiKey.Key
+    key: enum.CarDealerStoreUiKey.Key
   - type: UserInterface
     interfaces:
-      enum.EntityStoreUiKey.Key:
-        type: EntityStoreBoundUserInterface
+      enum.CarDealerStoreUiKey.Key:
+        type: CarDealerStoreBoundUserInterface
       enum.WiresUiKey.Key:
         type: WiresBoundUserInterface

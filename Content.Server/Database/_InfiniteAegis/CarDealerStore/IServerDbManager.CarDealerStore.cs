@@ -7,22 +7,22 @@ namespace Content.Server.Database;
 
 public partial interface IServerDbManager
 {
-    Task<EntityStoreCharacterState?> GetEntityStoreCharacterStateAsync(NetUserId userId, int characterSlot);
+    Task<CarDealerStoreCharacterState?> GetCarDealerStoreCharacterStateAsync(NetUserId userId, int characterSlot);
 
-    Task<List<EntityStorePersistentEntityData>> GetPersistentCharacterEntitiesAsync(
+    Task<List<CarDealerStorePersistentEntityData>> GetPersistentCharacterEntitiesAsync(
         NetUserId userId,
         int characterSlot);
 
-    Task<List<EntityStorePersistentEntitySummary>> GetPersistentCharacterEntitySummariesAsync(
+    Task<List<CarDealerStorePersistentEntitySummary>> GetPersistentCharacterEntitySummariesAsync(
         NetUserId userId,
         int characterSlot);
 
-    Task<EntityStorePersistentEntityData?> GetPersistentCharacterEntityAsync(
+    Task<CarDealerStorePersistentEntityData?> GetPersistentCharacterEntityAsync(
         NetUserId userId,
         int characterSlot,
         Guid persistentEntityId);
 
-    Task<EntityStorePurchaseResult> PurchasePersistentEntityAsync(
+    Task<CarDealerStorePurchaseResult> PurchasePersistentEntityAsync(
         NetUserId userId,
         int characterSlot,
         Guid persistentEntityId,

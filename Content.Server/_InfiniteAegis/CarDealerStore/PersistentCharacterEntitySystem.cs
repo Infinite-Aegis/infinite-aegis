@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Content.Server.Database;
 using Content.Server.Garage;
-using Content.Shared.EntityStore;
+using Content.Shared.CarDealerStore;
 using Content.Shared.GameTicking;
 using Robust.Shared.Asynchronous;
 using Robust.Shared.Containers;
@@ -14,7 +14,7 @@ using Robust.Shared.EntitySerialization.Systems;
 using Robust.Shared.Map;
 using Robust.Shared.Prototypes;
 
-namespace Content.Server.EntityStore;
+namespace Content.Server.CarDealerStore;
 
 public sealed partial class PersistentCharacterEntitySystem : EntitySystem
 {

@@ -1,4 +1,4 @@
-namespace Content.Shared.EntityStore;
+namespace Content.Shared.CarDealerStore;
 
 /// <summary>
 /// Identifies the root of an entity graph owned by a specific character profile.

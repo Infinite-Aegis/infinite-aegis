@@ -7,7 +7,7 @@ using Content.Server.Database;
 using Content.Server.Garage;
 using Content.Server.Popups;
 using Content.Server.Preferences.Managers;
-using Content.Shared.EntityStore;
+using Content.Shared.CarDealerStore;
 using Content.Shared.Interaction;
 using Content.Shared.Mobs.Systems;
 using Content.Shared.UserInterface;
@@ -16,9 +16,9 @@ using Robust.Shared.Network;
 using Robust.Shared.Player;
 using Robust.Shared.Prototypes;
 
-namespace Content.Server.EntityStore;
+namespace Content.Server.CarDealerStore;
 
-public sealed partial class EntityStoreMerchantSystem : EntitySystem
+public sealed partial class CarDealerStoreSystem : EntitySystem
 {
     private const long Balance = 0;
 
@@ -39,34 +39,34 @@ public sealed partial class EntityStoreMerchantSystem : EntitySystem
     {
         base.Initialize();
 
-        SubscribeLocalEvent<EntityStoreMerchantComponent, BeforeActivatableUIOpenEvent>(OnBeforeUiOpen);
-        SubscribeLocalEvent<EntityStoreMerchantComponent, EntityStoreRequestUpdateMessage>(OnRequestUpdate);
-        SubscribeLocalEvent<EntityStoreMerchantComponent, EntityStoreBuyMessage>(OnBuy);
+        SubscribeLocalEvent<CarDealerStoreComponent, BeforeActivatableUIOpenEvent>(OnBeforeUiOpen);
+        SubscribeLocalEvent<CarDealerStoreComponent, CarDealerStoreRequestUpdateMessage>(OnRequestUpdate);
+        SubscribeLocalEvent<CarDealerStoreComponent, CarDealerStoreBuyMessage>(OnBuy);
     }
 
     private void OnBeforeUiOpen(
-        Entity<EntityStoreMerchantComponent> merchant,
+        Entity<CarDealerStoreComponent> merchant,
         ref BeforeActivatableUIOpenEvent args)
     {
         _ = UpdateUiAsync(merchant, args.User);
     }
 
     private void OnRequestUpdate(
-        Entity<EntityStoreMerchantComponent> merchant,
-        ref EntityStoreRequestUpdateMessage args)
+        Entity<CarDealerStoreComponent> merchant,
+        ref CarDealerStoreRequestUpdateMessage args)
     {
         _ = UpdateUiAsync(merchant, args.Actor);
     }
 
     private void OnBuy(
-        Entity<EntityStoreMerchantComponent> merchant,
-        ref EntityStoreBuyMessage args)
+        Entity<CarDealerStoreComponent> merchant,
+        ref CarDealerStoreBuyMessage args)
     {
         _ = BuyAsync(merchant, args.Actor, args.OfferId, args.RequestId);
     }
 
     private async Task BuyAsync(
-        Entity<EntityStoreMerchantComponent> merchant,
+        Entity<CarDealerStoreComponent> merchant,
         EntityUid actor,
         string requestedOfferId,
         Guid requestId)
@@ -88,7 +88,7 @@ public sealed partial class EntityStoreMerchantSystem : EntitySystem
                 return;
 
             var slot = _preferences.GetPreferences(session.UserId).SelectedCharacterIndex;
-            var characterState = await _database.GetEntityStoreCharacterStateAsync(session.UserId, slot);
+            var characterState = await _database.GetCarDealerStoreCharacterStateAsync(session.UserId, slot);
             if (!TryGetValidatedSession(merchant, actor, out var refreshedSession) ||
                 refreshedSession.UserId != session.UserId)
             {
@@ -97,13 +97,13 @@ public sealed partial class EntityStoreMerchantSystem : EntitySystem
 
             if (characterState == null)
             {
-                _popup.PopupEntity(Loc.GetString("entity-store-purchase-failed"), actor, actor);
+                _popup.PopupEntity(Loc.GetString("car-dealer-store-purchase-failed"), actor, actor);
                 return;
             }
 
             if (Balance < offer.Price)
             {
-                _popup.PopupEntity(Loc.GetString("entity-store-insufficient-funds"), actor, actor);
+                _popup.PopupEntity(Loc.GetString("car-dealer-store-insufficient-funds"), actor, actor);
                 return;
             }
 
@@ -115,7 +115,7 @@ public sealed partial class EntityStoreMerchantSystem : EntitySystem
                     actor,
                     out var serializedState))
             {
-                _popup.PopupEntity(Loc.GetString("entity-store-purchase-failed"), actor, actor);
+                _popup.PopupEntity(Loc.GetString("car-dealer-store-purchase-failed"), actor, actor);
                 return;
             }
 
@@ -132,21 +132,21 @@ public sealed partial class EntityStoreMerchantSystem : EntitySystem
             if (!Exists(actor))
                 return;
 
-            if (result.Status == EntityStorePurchaseStatus.Success)
+            if (result.Status == CarDealerStorePurchaseStatus.Success)
             {
                 _garage.NotifyStoreWrite(
                     actor,
                     session.UserId,
                     slot,
                     result.ProfileId ?? characterState.ProfileId);
-                _popup.PopupEntity(Loc.GetString("entity-store-purchase-success"), actor, actor);
+                _popup.PopupEntity(Loc.GetString("car-dealer-store-purchase-success"), actor, actor);
             }
             else
             {
                 var message = result.Status switch
                 {
-                    EntityStorePurchaseStatus.InsufficientFunds => "entity-store-insufficient-funds",
-                    _ => "entity-store-purchase-failed",
+                    CarDealerStorePurchaseStatus.InsufficientFunds => "car-dealer-store-insufficient-funds",
+                    _ => "car-dealer-store-purchase-failed",
                 };
                 _popup.PopupEntity(Loc.GetString(message), actor, actor);
             }
@@ -159,13 +159,13 @@ public sealed partial class EntityStoreMerchantSystem : EntitySystem
         }
     }
 
-    private async Task UpdateUiAsync(Entity<EntityStoreMerchantComponent> merchant, EntityUid actor)
+    private async Task UpdateUiAsync(Entity<CarDealerStoreComponent> merchant, EntityUid actor)
     {
         if (!TryGetValidatedSession(merchant, actor, out var session))
             return;
 
         var slot = _preferences.GetPreferences(session.UserId).SelectedCharacterIndex;
-        var characterState = await _database.GetEntityStoreCharacterStateAsync(session.UserId, slot);
+        var characterState = await _database.GetCarDealerStoreCharacterStateAsync(session.UserId, slot);
         if (characterState == null ||
             !TryGetValidatedSession(merchant, actor, out var refreshedSession) ||
             refreshedSession.UserId != session.UserId)
@@ -173,13 +173,13 @@ public sealed partial class EntityStoreMerchantSystem : EntitySystem
             return;
         }
 
-        var offers = new List<EntityStoreOfferData>(merchant.Comp.Offers.Count);
+        var offers = new List<CarDealerStoreOfferData>(merchant.Comp.Offers.Count);
         foreach (var offerId in merchant.Comp.Offers)
         {
             if (!_prototypes.TryIndex(offerId, out var offer) || offer.Price < 0)
                 continue;
 
-            offers.Add(new EntityStoreOfferData(
+            offers.Add(new CarDealerStoreOfferData(
                 offer.ID,
                 offer.Product.Id,
                 offer.Description?.Id,
@@ -188,12 +188,12 @@ public sealed partial class EntityStoreMerchantSystem : EntitySystem
 
         _ui.SetUiState(
             merchant.Owner,
-            EntityStoreUiKey.Key,
-            new EntityStoreBoundUserInterfaceState(Balance, offers));
+            CarDealerStoreUiKey.Key,
+            new CarDealerStoreBoundUserInterfaceState(Balance, offers));
     }
 
     private bool TryGetValidatedSession(
-        Entity<EntityStoreMerchantComponent> merchant,
+        Entity<CarDealerStoreComponent> merchant,
         EntityUid actor,
         [NotNullWhen(true)] out ICommonSession? session)
     {

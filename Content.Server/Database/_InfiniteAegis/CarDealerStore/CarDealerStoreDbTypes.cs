@@ -2,7 +2,7 @@ using System;
 
 namespace Content.Server.Database;
 
-public enum EntityStorePurchaseStatus : byte
+public enum CarDealerStorePurchaseStatus : byte
 {
     Success,
     CharacterNotFound,
@@ -13,9 +13,9 @@ public enum EntityStorePurchaseStatus : byte
     Failed,
 }
 
-public sealed record EntityStoreCharacterState(int ProfileId);
+public sealed record CarDealerStoreCharacterState(int ProfileId);
 
-public sealed record EntityStorePersistentEntityData(
+public sealed record CarDealerStorePersistentEntityData(
     Guid Id,
     int ProfileId,
     string OfferId,
@@ -24,11 +24,11 @@ public sealed record EntityStorePersistentEntityData(
     string EntityState,
     long Revision);
 
-public sealed record EntityStorePersistentEntitySummary(
+public sealed record CarDealerStorePersistentEntitySummary(
     Guid Id,
     string OfferId,
     string PrototypeId);
 
-public sealed record EntityStorePurchaseResult(
-    EntityStorePurchaseStatus Status,
+public sealed record CarDealerStorePurchaseResult(
+    CarDealerStorePurchaseStatus Status,
     int? ProfileId = null);

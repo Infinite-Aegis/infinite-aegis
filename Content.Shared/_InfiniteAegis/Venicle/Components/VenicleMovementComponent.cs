@@ -2,10 +2,6 @@ using Robust.Shared.GameStates;
 
 namespace Content.Shared.Venicle.Components;
 
-/// <summary>
-/// Physical driving configuration and runtime state for a vehicle.
-/// Passenger and seat configuration belongs to <see cref="VenicleComponent"/>.
-/// </summary>
 [RegisterComponent, NetworkedComponent, AutoGenerateComponentState(fieldDeltas: true)]
 public sealed partial class VenicleMovementComponent : Component
 {
@@ -26,7 +22,14 @@ public sealed partial class VenicleMovementComponent : Component
     [DataField] public float AngularResistance = 1500f;
     [DataField] public float SteeringAngularResistanceModifier = 0.25f;
     [DataField] public float TileFrictionModifier = 0.05f;
+    [DataField] public float AngularInertiaMultiplier = 1f;
 
     [ViewVariables, AutoNetworkedField]
     public float CurrentSteering;
+
+    [ViewVariables]
+    public float? BaseAngularInertia;
+
+    [ViewVariables]
+    public float AppliedAngularInertiaMultiplier = 1f;
 }

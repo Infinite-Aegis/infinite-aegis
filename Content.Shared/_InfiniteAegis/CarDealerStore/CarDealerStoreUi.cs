@@ -1,22 +1,22 @@
 using Robust.Shared.Serialization;
 
-namespace Content.Shared.EntityStore;
+namespace Content.Shared.CarDealerStore;
 
 [Serializable, NetSerializable]
-public enum EntityStoreUiKey : byte
+public enum CarDealerStoreUiKey : byte
 {
     Key,
 }
 
 [Serializable, NetSerializable]
-public sealed class EntityStoreOfferData
+public sealed class CarDealerStoreOfferData
 {
     public readonly string Id;
     public readonly string ProductEntity;
     public readonly string? DescriptionLoc;
     public readonly int Price;
 
-    public EntityStoreOfferData(string id, string productEntity, string? descriptionLoc, int price)
+    public CarDealerStoreOfferData(string id, string productEntity, string? descriptionLoc, int price)
     {
         Id = id;
         ProductEntity = productEntity;
@@ -26,12 +26,12 @@ public sealed class EntityStoreOfferData
 }
 
 [Serializable, NetSerializable]
-public sealed class EntityStoreBoundUserInterfaceState : BoundUserInterfaceState
+public sealed class CarDealerStoreBoundUserInterfaceState : BoundUserInterfaceState
 {
     public readonly long Balance;
-    public readonly List<EntityStoreOfferData> Offers;
+    public readonly List<CarDealerStoreOfferData> Offers;
 
-    public EntityStoreBoundUserInterfaceState(long balance, List<EntityStoreOfferData> offers)
+    public CarDealerStoreBoundUserInterfaceState(long balance, List<CarDealerStoreOfferData> offers)
     {
         Balance = balance;
         Offers = offers;
@@ -39,15 +39,15 @@ public sealed class EntityStoreBoundUserInterfaceState : BoundUserInterfaceState
 }
 
 [Serializable, NetSerializable]
-public sealed class EntityStoreRequestUpdateMessage : BoundUserInterfaceMessage;
+public sealed class CarDealerStoreRequestUpdateMessage : BoundUserInterfaceMessage;
 
 [Serializable, NetSerializable]
-public sealed class EntityStoreBuyMessage : BoundUserInterfaceMessage
+public sealed class CarDealerStoreBuyMessage : BoundUserInterfaceMessage
 {
     public readonly string OfferId;
     public readonly Guid RequestId;
 
-    public EntityStoreBuyMessage(string offerId, Guid requestId)
+    public CarDealerStoreBuyMessage(string offerId, Guid requestId)
     {
         OfferId = offerId;
         RequestId = requestId;

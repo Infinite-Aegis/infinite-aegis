@@ -1,9 +1,9 @@
 using Robust.Shared.Prototypes;
 
-namespace Content.Shared.EntityStore;
+namespace Content.Shared.CarDealerStore;
 
 [Prototype]
-public sealed partial class EntityStoreOfferPrototype : IPrototype
+public sealed partial class CarDealerStoreOfferPrototype : IPrototype
 {
     [IdDataField]
     public string ID { get; private set; } = string.Empty;

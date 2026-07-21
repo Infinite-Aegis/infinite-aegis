@@ -27,6 +27,8 @@ public sealed partial class VenicleMovementSystem : VirtualController
         UpdatesBefore.Add(typeof(TileFrictionController));
 
         SubscribeLocalEvent<VenicleMovementComponent, ComponentStartup>(OnStartup);
+        SubscribeLocalEvent<VenicleMovementComponent, MapInitEvent>(OnMapInit);
+        SubscribeLocalEvent<VenicleMovementComponent, ComponentShutdown>(OnShutdown);
         SubscribeLocalEvent<VenicleMovementComponent, UpdateCanMoveEvent>(OnUpdateCanMove);
         SubscribeLocalEvent<VenicleMovementComponent, TileFrictionEvent>(OnTileFriction);
     }
@@ -34,6 +36,34 @@ public sealed partial class VenicleMovementSystem : VirtualController
     private void OnStartup(Entity<VenicleMovementComponent> ent, ref ComponentStartup args)
     {
         _actionBlocker.UpdateCanMove(ent.Owner);
+    }
+
+    private void OnMapInit(Entity<VenicleMovementComponent> ent, ref MapInitEvent args)
+    {
+        if (!TryComp<PhysicsComponent>(ent, out var physics) || physics.BodyType != BodyType.Dynamic)
+            return;
+
+        var multiplier = MathF.Max(1f, ent.Comp.AngularInertiaMultiplier);
+        if (multiplier <= 1f || physics.Inertia <= 0f)
+            return;
+
+        ent.Comp.BaseAngularInertia = physics.Inertia;
+        ent.Comp.AppliedAngularInertiaMultiplier = multiplier;
+        _physics.SetInertia(ent, physics, physics.Inertia * multiplier);
+    }
+
+    private void OnShutdown(Entity<VenicleMovementComponent> ent, ref ComponentShutdown args)
+    {
+        if (ent.Comp.BaseAngularInertia is not { } inertia ||
+            !TryComp<PhysicsComponent>(ent, out var physics) ||
+            physics.BodyType != BodyType.Dynamic)
+        {
+            return;
+        }
+
+        _physics.SetInertia(ent, physics, inertia);
+        ent.Comp.BaseAngularInertia = null;
+        ent.Comp.AppliedAngularInertiaMultiplier = 1f;
     }
 
     private void OnUpdateCanMove(Entity<VenicleMovementComponent> ent, ref UpdateCanMoveEvent args)
@@ -204,6 +234,7 @@ public sealed partial class VenicleMovementSystem : VirtualController
             frontRight,
             venicle.FrontCorneringStiffness,
             venicle.MaxLateralGrip,
+            venicle.AppliedAngularInertiaMultiplier,
             frameTime);
         ApplyLateralGrip(
             uid,
@@ -213,6 +244,7 @@ public sealed partial class VenicleMovementSystem : VirtualController
             rearRight,
             venicle.RearCorneringStiffness,
             venicle.MaxLateralGrip,
+            venicle.AppliedAngularInertiaMultiplier,
             frameTime);
     }
 
@@ -224,6 +256,7 @@ public sealed partial class VenicleMovementSystem : VirtualController
         Vector2 right,
         float stiffness,
         float maxGrip,
+        float angularInertiaMultiplier,
         float frameTime)
     {
         var lever = rotation.RotateVec(localPoint - physics.LocalCenter);
@@ -237,7 +270,10 @@ public sealed partial class VenicleMovementSystem : VirtualController
         magnitude = MathF.Min(magnitude, MathF.Abs(lateralSpeed) * physics.Mass * 0.5f / frameTime);
         var force = -MathF.Sign(lateralSpeed) * right * magnitude;
         _physics.ApplyForce(uid, force, body: physics);
-        _physics.ApplyTorque(uid, Vector2Helpers.Cross(lever, force), body: physics);
+        _physics.ApplyTorque(
+            uid,
+            Vector2Helpers.Cross(lever, force) * angularInertiaMultiplier,
+            body: physics);
     }
 
     private void ApplyAngularResistance(
@@ -254,7 +290,8 @@ public sealed partial class VenicleMovementSystem : VirtualController
                                  MathF.Abs(venicle.CurrentSteering);
         var magnitude = MathF.Abs(physics.AngularVelocity) *
                         MathF.Max(0f, venicle.AngularResistance) *
-                        steeringResistance;
+                        steeringResistance *
+                        venicle.AppliedAngularInertiaMultiplier;
         magnitude = MathF.Min(magnitude, MathF.Abs(physics.AngularVelocity) / physics.InvI / frameTime);
         _physics.ApplyTorque(uid, -MathF.Sign(physics.AngularVelocity) * magnitude, body: physics);
     }

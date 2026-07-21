@@ -3,8 +3,8 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Content.Server.Database;
-using Content.Server.EntityStore;
-using Content.Shared.EntityStore;
+using Content.Server.CarDealerStore;
+using Content.Shared.CarDealerStore;
 using Robust.Shared.EntitySerialization;
 using Robust.Shared.EntitySerialization.Systems;
 using Robust.Shared.Map;
@@ -114,7 +114,7 @@ public sealed partial class GarageSystem
     }
 
     private bool TryMaterializeVehicle(
-        EntityStorePersistentEntityData vehicle,
+        CarDealerStorePersistentEntityData vehicle,
         EntityUid owner,
         EntityUid parkingLot,
         out EntityUid spawned)
