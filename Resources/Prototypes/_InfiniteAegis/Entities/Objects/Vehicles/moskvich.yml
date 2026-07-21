@@ -15,6 +15,33 @@
     scale: 0.55, 0.55
 
 - type: entity
+  id: VenicleFuelPortMarker
+  categories: [ HideSpawnMenu ]
+  name: vehicle fuel filler
+  components:
+  - type: VenicleFuelPort
+  - type: Clickable
+    bounds:
+      all: "-0.3,-0.3,0.3,0.3"
+  - type: Sprite
+    sprite: Interface/Actions/actions_mecha.rsi
+    state: mech_internals_on
+    drawdepth: Effects
+    color: "#ffffff00"
+    scale: 0.55, 0.55
+
+- type: entity
+  id: VenicleFuelSolution
+  parent: Solution
+  categories: [ HideSpawnMenu ]
+  name: vehicle fuel solution
+  components:
+  - type: Solution
+    id: fuel
+    solution:
+      maxVol: 300
+
+- type: entity
   id: Moskvich
   name: moskvich
   description: A compact drivable vehicle.
@@ -74,6 +101,12 @@
     occupantWhitelist:
       components:
       - HumanoidProfile
+  - type: VenicleFuelTank
+    portOffset: 1.10,0.90
+    markerOffset: -0.55,0
+  - type: SolutionManager
+    solutions:
+    - VenicleFuelSolution
   - type: VenicleMovement
     maxForwardSpeed: 8
     maxReverseSpeed: 3
