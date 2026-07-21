@@ -1,6 +1,6 @@
 - type: entity
   parent: BaseItem
-  id: VenicleRepairToolbox
+  id: VehicleRepairToolbox
   name: vehicle repair toolbox
   description: A self-contained toolbox for repairing damaged vehicles.
   components:
@@ -10,6 +10,6 @@
   - type: Item
     size: Ginormous
     sprite: Objects/Tools/Toolboxes/toolbox_blue.rsi
-  - type: VenicleRepairToolbox
+  - type: VehicleRepairToolbox
   - type: LimitedCharges
     maxCharges: 100

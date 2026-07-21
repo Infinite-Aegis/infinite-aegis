@@ -1,9 +1,10 @@
 - type: entity
-  id: VenicleSeatMarker
+  id: VehicleSeatMarker
+  save: false
   categories: [ HideSpawnMenu ]
   name: vehicle seat
   components:
-  - type: VenicleSeat
+  - type: VehicleSeatMarker
   - type: Clickable
     bounds:
       all: "-0.3,-0.3,0.3,0.3"
@@ -15,11 +16,12 @@
     scale: 0.55, 0.55
 
 - type: entity
-  id: VenicleFuelPortMarker
+  id: VehicleFuelPortMarker
+  save: false
   categories: [ HideSpawnMenu ]
   name: vehicle fuel filler
   components:
-  - type: VenicleFuelPort
+  - type: VehicleFuelPort
   - type: Clickable
     bounds:
       all: "-0.3,-0.3,0.3,0.3"
@@ -31,7 +33,7 @@
     scale: 0.55, 0.55
 
 - type: entity
-  id: VenicleFuelSolution
+  id: VehicleFuelSolution
   parent: Solution
   categories: [ HideSpawnMenu ]
   name: vehicle fuel solution
@@ -66,7 +68,7 @@
     damageModifierSet: StructuralMetallic
   - type: Injurable
     damageContainer: StructuralInorganic
-  - type: VenicleDamage
+  - type: VehicleDamage
   - type: Fixtures
     fixtures:
       fix1:
@@ -86,7 +88,7 @@
         layer:
         - WallLayer
         hard: true
-  - type: Venicle
+  - type: Vehicle
     maxSeatInteractionSpeed: 0.15
     maxSeatInteractionAngularSpeed: 0.1
     seats:
@@ -106,14 +108,14 @@
     occupantWhitelist:
       components:
       - HumanoidProfile
-  - type: VenicleFuelTank
+  - type: VehicleFuelTank
     portOffset: 1.10,0.90
     markerOffset: -0.55,0
     fuelConsumptionPerDistance: 0.003
   - type: SolutionManager
     solutions:
-    - VenicleFuelSolution
-  - type: VenicleMovement
+    - VehicleFuelSolution
+  - type: VehicleMovement
     maxForwardSpeed: 8
     maxReverseSpeed: 3
     forwardEngineForce: 6000
@@ -134,5 +136,5 @@
     angularInertiaMultiplier: 100
   - type: UserInterface
     interfaces:
-      enum.VenicleUiKey.Seats:
-        type: VenicleBoundUserInterface
+      enum.VehicleUiKey.Seats:
+        type: VehicleSeatBoundUserInterface

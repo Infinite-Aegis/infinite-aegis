@@ -2,8 +2,9 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
-using Content.Server.Database;
 using Content.Server.CarDealerStore;
+using Content.Server.Database;
+using Content.Server.Vehicle;
 using Content.Shared.CarDealerStore;
 using Robust.Shared.EntitySerialization;
 using Robust.Shared.EntitySerialization.Systems;
@@ -18,6 +19,7 @@ public sealed partial class GarageSystem
     [Dependency] private EntityLookupSystem _lookup = default!;
     [Dependency] private MapLoaderSystem _mapLoader = default!;
     [Dependency] private SharedTransformSystem _transform = default!;
+    [Dependency] private VehicleDeserializationSystem _vehicleDeserialization = default!;
 
     private async Task SpawnVehicleAsync(EntityUid owner, Guid vehicleId)
     {
@@ -158,6 +160,9 @@ public sealed partial class GarageSystem
             persistence.Revision = vehicle.Revision;
 
             _transform.SetCoordinates(root, Transform(parkingLot).Coordinates);
+            if (!_vehicleDeserialization.TryRestore(root))
+                return false;
+
             persistence.SuppressSave = false;
             spawned = root;
             result = null;

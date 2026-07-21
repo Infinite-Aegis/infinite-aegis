@@ -5,7 +5,6 @@ garage-action-name = Garage
 garage-action-description = List of cars with ability to summon them on nearest parking lot
 garage-title = Garage
 garage-description = Select a vehicle to deliver to the nearest parking lot.
-garage-vehicle-id = ID: {$id}
 garage-call = Call
 garage-already-called = You have already called a vehicle.
 garage-no-parking-lot = No parking lot is available for vehicle delivery.

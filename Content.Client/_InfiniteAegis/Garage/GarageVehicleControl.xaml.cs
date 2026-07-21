@@ -30,7 +30,6 @@ public sealed partial class GarageVehicleControl : Control
             NameLabel.Text = vehicle.PrototypeId;
         }
 
-        IdLabel.Text = Loc.GetString("garage-vehicle-id", ("id", vehicle.Id));
         CallButton.Text = Loc.GetString("garage-call");
         CallButton.OnButtonDown += _ =>
         {

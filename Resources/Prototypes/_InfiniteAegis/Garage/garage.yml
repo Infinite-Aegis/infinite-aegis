@@ -7,8 +7,8 @@
   - type: Action
     itemIconStyle: NoItem
     icon:
-      sprite: _InfiniteAegis/Objects/Vehicles/moskvich.rsi
-      state: m1
+      sprite: Interface/Actions/actions_borg.rsi
+      state: no-action
   - type: InstantAction
     event: !type:OpenGarageEvent
 

@@ -1,0 +1,27 @@
+- type: entity
+  parent: BaseAction
+  id: ActionVehicleEject
+  name: Eject
+  description: Exit the vehicle.
+  components:
+  - type: Action
+    itemIconStyle: NoItem
+    icon:
+      sprite: Interface/Actions/actions_mecha.rsi
+      state: mech_eject
+  - type: InstantAction
+    event: !type:VehicleEjectActionEvent
+
+- type: entity
+  parent: BaseAction
+  id: ActionVehicleChangeSeat
+  name: Change seat
+  description: Choose another seat in the vehicle.
+  components:
+  - type: Action
+    itemIconStyle: NoItem
+    icon:
+      sprite: Interface/Actions/actions_mecha.rsi
+      state: mech_seat_swap
+  - type: InstantAction
+    event: !type:VehicleChangeSeatActionEvent

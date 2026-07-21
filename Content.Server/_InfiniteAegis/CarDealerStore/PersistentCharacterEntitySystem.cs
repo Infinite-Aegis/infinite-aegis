@@ -5,8 +5,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Content.Server.Database;
 using Content.Server.Garage;
+using Content.Server.Vehicle;
 using Content.Shared.CarDealerStore;
 using Content.Shared.GameTicking;
+using Content.Shared.Vehicle.Components;
 using Robust.Shared.Asynchronous;
 using Robust.Shared.Containers;
 using Robust.Shared.EntitySerialization;
@@ -21,6 +23,7 @@ public sealed partial class PersistentCharacterEntitySystem : EntitySystem
     [Dependency] private IServerDbManager _database = default!;
     [Dependency] private GarageSystem _garage = default!;
     [Dependency] private MapLoaderSystem _mapLoader = default!;
+    [Dependency] private VehicleSeatSystem _seats = default!;
     [Dependency] private ITaskManager _taskManager = default!;
 
     private readonly HashSet<EntityUid> _capturedBeforeDeletion = [];
@@ -135,6 +138,12 @@ public sealed partial class PersistentCharacterEntitySystem : EntitySystem
             entity.Comp.CharacterProfileId <= 0 ||
             entity.Comp.Revision < 0)
         {
+            return false;
+        }
+
+        if (TryComp(entity.Owner, out VehicleComponent? vehicle) && !_seats.EjectAll(entity.Owner, vehicle))
+        {
+            Log.Error($"Failed to eject occupants before serializing {ToPrettyString(entity.Owner)}.");
             return false;
         }
 
