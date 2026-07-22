@@ -2,9 +2,12 @@ using System.Diagnostics.CodeAnalysis;
 using Content.Shared.ActionBlocker;
 using Content.Shared.Chemistry.Components;
 using Content.Shared.Chemistry.EntitySystems;
+using Content.Shared.Chemistry.Prototypes;
+using Content.Shared.FixedPoint;
 using Content.Shared.Interaction;
 using Content.Shared.Popups;
 using Content.Shared.Vehicle.Components;
+using Robust.Shared.Prototypes;
 
 namespace Content.Shared.Vehicle.Systems;
 
@@ -15,6 +18,7 @@ public sealed partial class VehicleRefuelingSystem : EntitySystem
     [Dependency] private SharedPopupSystem _popup = default!;
     [Dependency] private SharedSolutionContainerSystem _solution = default!;
     [Dependency] private SolutionTransferSystem _solutionTransfer = default!;
+    [Dependency] private IPrototypeManager _prototype = default!;
 
     public override void Initialize()
     {
@@ -26,8 +30,7 @@ public sealed partial class VehicleRefuelingSystem : EntitySystem
 
     public bool CanAttemptRefuel(Entity<VehicleFuelPortComponent> port, EntityUid user, EntityUid used)
     {
-        if (!TryGetTransferParts(port, used, out var transfer, out _, out var sourceSolution, out _, out var tankSolution) ||
-            !transfer.CanSend ||
+        if (!TryGetTransferParts(port, used, out _, out var sourceSolution, out _, out _, out var tankSolution) ||
             sourceSolution.Volume <= 0 ||
             tankSolution.AvailableVolume <= 0 ||
             !_actionBlocker.CanInteract(user, port.Owner) ||
@@ -46,9 +49,9 @@ public sealed partial class VehicleRefuelingSystem : EntitySystem
             !CanAttemptRefuel(port, args.User, args.Used) ||
             !TryGetTransferParts(port,
                 args.Used,
-                out var transfer,
                 out var source,
                 out var sourceSolution,
+                out var transferAmount,
                 out var target,
                 out _))
         {
@@ -70,7 +73,7 @@ public sealed partial class VehicleRefuelingSystem : EntitySystem
             source.Value,
             port.Comp.Vehicle,
             target.Value,
-            transfer.TransferAmount);
+            transferAmount);
 
         var transferred = _solutionTransfer.Transfer(data);
         if (transferred <= 0)
@@ -96,7 +99,7 @@ public sealed partial class VehicleRefuelingSystem : EntitySystem
         if (args.To != tank.Owner)
             return;
 
-        if (!_solution.TryGetDrainableSolution(args.From, out _, out var sourceSolution) ||
+        if (!TryGetTransferSource(args.From, out _, out var sourceSolution, out _) ||
             !ContainsOnlyFuel(sourceSolution, tank.Comp))
         {
             args.Cancel(Loc.GetString("vehicle-fuel-tank-gasoline-only"));
@@ -106,26 +109,59 @@ public sealed partial class VehicleRefuelingSystem : EntitySystem
     private bool TryGetTransferParts(
         Entity<VehicleFuelPortComponent> port,
         EntityUid sourceUid,
-        [NotNullWhen(true)] out SolutionTransferComponent? transfer,
         [NotNullWhen(true)] out Entity<SolutionComponent>? source,
         [NotNullWhen(true)] out Solution? sourceSolution,
+        out FixedPoint2 transferAmount,
         [NotNullWhen(true)] out Entity<SolutionComponent>? target,
         [NotNullWhen(true)] out Solution? targetSolution)
     {
-        transfer = null;
         source = null;
         sourceSolution = null;
+        transferAmount = FixedPoint2.Zero;
         target = null;
         targetSolution = null;
 
-        if (!TryComp(sourceUid, out transfer) ||
-            !_solution.TryGetDrainableSolution(sourceUid, out source, out sourceSolution) ||
+        if (!TryGetTransferSource(sourceUid, out source, out sourceSolution, out transferAmount) ||
             !TryComp(port.Comp.Vehicle, out VehicleFuelTankComponent? tank) ||
             !_solution.TryGetSolution(port.Comp.Vehicle, tank.Solution, out target, out targetSolution))
         {
             return false;
         }
 
+        return true;
+    }
+
+    private bool TryGetTransferSource(
+        EntityUid sourceUid,
+        [NotNullWhen(true)] out Entity<SolutionComponent>? source,
+        [NotNullWhen(true)] out Solution? sourceSolution,
+        out FixedPoint2 transferAmount)
+    {
+        source = null;
+        sourceSolution = null;
+        transferAmount = FixedPoint2.Zero;
+
+        if (TryComp(sourceUid, out InjectorComponent? injector))
+        {
+            if (!_prototype.Resolve(injector.ActiveModeProtoId, out var mode) ||
+                !mode.Behavior.HasFlag(InjectorBehavior.Inject) ||
+                !_solution.TryGetSolution(sourceUid, injector.SolutionName, out source, out sourceSolution))
+            {
+                return false;
+            }
+
+            transferAmount = injector.CurrentTransferAmount ?? sourceSolution.Volume;
+            return true;
+        }
+
+        if (!TryComp(sourceUid, out SolutionTransferComponent? transfer) ||
+            !transfer.CanSend ||
+            !_solution.TryGetDrainableSolution(sourceUid, out source, out sourceSolution))
+        {
+            return false;
+        }
+
+        transferAmount = transfer.TransferAmount;
         return true;
     }
 

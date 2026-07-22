@@ -95,22 +95,22 @@
     - id: driver
       driver: true
       occupantOffset: -0.28,-0.45
-      exitOffset: -1.10,-0.45
+      exitOffset: -1.45,-0.45
     - id: front-passenger
       occupantOffset: 0.28,-0.45
-      exitOffset: 1.10,-0.45
+      exitOffset: 1.45,-0.45
     - id: rear-left-passenger
       occupantOffset: -0.28,0.45
-      exitOffset: -1.10,0.45
+      exitOffset: -1.45,0.45
     - id: rear-right-passenger
       occupantOffset: 0.28,0.45
-      exitOffset: 1.10,0.45
+      exitOffset: 1.45,0.45
     occupantWhitelist:
       components:
       - HumanoidProfile
   - type: VehicleFuelTank
-    portOffset: 1.10,0.90
-    markerOffset: -0.55,0
+    portOffset: 1.30,0.90
+    markerOffset: -0.75,0
     fuelConsumptionPerDistance: 0.003
   - type: SolutionManager
     solutions:
