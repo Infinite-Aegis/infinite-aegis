@@ -92,11 +92,11 @@
     maxSeatInteractionSpeed: 0.15
     maxSeatInteractionAngularSpeed: 0.1
     seats:
-    - id: driver
-      driver: true
+    - id: front-passenger
       occupantOffset: -0.28,-0.45
       exitOffset: -1.45,-0.45
-    - id: front-passenger
+    - id: driver
+      driver: true
       occupantOffset: 0.28,-0.45
       exitOffset: 1.45,-0.45
     - id: rear-left-passenger
