@@ -24,6 +24,9 @@ public sealed partial class VehicleMovementComponent : Component
     [DataField] public float TileFrictionModifier = 0.05f;
     [DataField] public float AngularInertiaMultiplier = 1f;
 
+    [DataField, ViewVariables, AutoNetworkedField]
+    public int CurrentGear = 1;
+
     [ViewVariables, AutoNetworkedField]
     public float CurrentSteering;
 

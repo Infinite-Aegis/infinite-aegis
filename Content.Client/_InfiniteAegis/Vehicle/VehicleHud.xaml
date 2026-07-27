@@ -1,0 +1,43 @@
+<PanelContainer
+    xmlns="https://spacestation14.io"
+    xmlns:graphics="clr-namespace:Robust.Client.Graphics;assembly=Robust.Client"
+    Visible="False"
+    VerticalAlignment="Bottom"
+    MinWidth="210"
+    Margin="8 0 0 0">
+    <PanelContainer.PanelOverride>
+        <graphics:StyleBoxFlat
+            BackgroundColor="#16181ddd"
+            BorderColor="#777b86"
+            BorderThickness="1"
+            ContentMarginTopOverride="5"
+            ContentMarginBottomOverride="5"
+            ContentMarginLeftOverride="7"
+            ContentMarginRightOverride="7" />
+    </PanelContainer.PanelOverride>
+    <BoxContainer
+        Orientation="Vertical"
+        HorizontalExpand="True"
+        SeparationOverride="1">
+        <BoxContainer Orientation="Horizontal" HorizontalExpand="True">
+            <Label Text="{Loc 'vehicle-hud-speed'}" StyleClasses="LabelKeyText" />
+            <Control HorizontalExpand="True" />
+            <Label Name="SpeedValue" HorizontalAlignment="Right" />
+        </BoxContainer>
+        <BoxContainer Orientation="Horizontal" HorizontalExpand="True">
+            <Label Text="{Loc 'vehicle-hud-durability'}" StyleClasses="LabelKeyText" />
+            <Control HorizontalExpand="True" />
+            <Label Name="DurabilityValue" HorizontalAlignment="Right" />
+        </BoxContainer>
+        <BoxContainer Orientation="Horizontal" HorizontalExpand="True">
+            <Label Text="{Loc 'vehicle-hud-fuel'}" StyleClasses="LabelKeyText" />
+            <Control HorizontalExpand="True" />
+            <Label Name="FuelValue" HorizontalAlignment="Right" />
+        </BoxContainer>
+        <BoxContainer Orientation="Horizontal" HorizontalExpand="True">
+            <Label Text="{Loc 'vehicle-hud-gear'}" StyleClasses="LabelKeyText" />
+            <Control HorizontalExpand="True" />
+            <Label Name="GearValue" HorizontalAlignment="Right" />
+        </BoxContainer>
+    </BoxContainer>
+</PanelContainer>
