@@ -1,3 +1,4 @@
+using Content.Shared.Damage;
 using Robust.Shared.GameStates;
 
 namespace Content.Shared.Vehicle.Components;
@@ -7,6 +8,18 @@ public sealed partial class VehicleDamageComponent : Component
 {
     [DataField]
     public float MaximumDamage = 500f;
+
+    [DataField]
+    public float MinimumCollisionSpeed = 2f;
+
+    [DataField]
+    public DamageSpecifier CollisionDamagePerSpeed = new()
+    {
+        DamageDict = new()
+        {
+            { "Structural", 20 },
+        },
+    };
 
     [ViewVariables]
     public VehicleDamageState State;
